@@ -1,0 +1,14 @@
+{
+    "extends": "@zardoy/tsconfig/react",
+    "compilerOptions": {
+        "noImplicitOverride": false,
+        "resolveJsonModule": true,
+        "lib": [
+            "ES2022",
+            "DOM"
+        ]
+    },
+    "include": [
+        "src"
+    ]
+}

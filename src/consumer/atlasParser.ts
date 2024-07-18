@@ -1,0 +1,163 @@
+import { VersionedStore } from './versionedStore'
+import { getAtlasSize, makeTextureAtlas } from './atlasCreator'
+
+type Texture = {
+    u: number
+    v: number
+    su?: number
+    sv?: number
+}
+
+/**
+ * @unstable
+ */
+export interface ItemsAtlasesOutputJson {
+    textures: Record<string, Texture>
+    width: number
+    height: number
+    tileSize: number
+    suSv: number
+}
+
+interface ItemsAtlases {
+    latest: ItemsAtlasesOutputJson
+    legacy?: ItemsAtlasesOutputJson
+}
+
+type StoreType = Texture & { imageName: string, version: string }
+type DataUrl = string
+export class AtlasParser {
+    atlasStore: VersionedStore<StoreType>
+    itemsCanvas
+    atlasHasLegacyImage: boolean
+
+    constructor(
+        public atlasJson: any,
+        public latestImage: string,
+        public legacyImage?: string
+    ) {
+        this.atlasStore = new VersionedStore<StoreType>()
+        this.atlasStore.inclusive = false
+        const itemsAtlases = atlasJson as ItemsAtlases
+        const addByVersion = (store: VersionedStore<StoreType>, version: string, textures: Record<string, Texture>, imageKey: string) => {
+            for (const [key, path] of Object.entries(textures)) {
+                store.push(version, key, {...path, version, imageName: imageKey})
+            }
+        }
+        addByVersion(this.atlasStore, 'latest', itemsAtlases.latest.textures, 'latest')
+        this.atlasHasLegacyImage = !!itemsAtlases.legacy
+        if (legacyImage && itemsAtlases.legacy) {
+            for (const key of Object.keys(itemsAtlases.legacy.textures)) {
+                const [version, name] = key.split('/')
+                addByVersion(this.atlasStore, version!, { [name!]: itemsAtlases.legacy.textures[key]! }, 'legacy')
+            }
+        }
+    }
+
+    get atlas() {
+        return this.atlasJson as ItemsAtlases
+    }
+
+    getTextureInfo(version: string, itemName: string) {
+        const info = this.atlasStore.get(version, itemName);
+        if (!info) return
+        const defaultSuSv = (info?.imageName === 'latest' ? this.atlas.latest : this.atlas.legacy!).suSv
+        return {
+            ...info,
+            su: info?.su ?? defaultSuSv,
+            sv: info?.sv ?? defaultSuSv,
+        }
+    }
+
+    async makeNewAtlas(version: string, getCustomImage?: (itemName: string) => DataUrl | HTMLImageElement | boolean | void, tileSize = this.atlas.latest.tileSize) {
+        const itemsAtlases = this.atlasJson as ItemsAtlases
+        type CoordsAndImage = {
+            u: number
+            v: number
+            su: number
+            sv: number
+            img: HTMLImageElement
+        }
+        const newTextures: Record<string, CoordsAndImage> = {}
+        const legacyImg = this.atlasHasLegacyImage ? await getLoadedImage(this.legacyImage!) : null
+        const latestImg = await getLoadedImage(this.latestImage)
+        for (const [itemName, texture] of Object.entries(itemsAtlases.latest.textures)) {
+            const customImage = getCustomImage?.(itemName)
+            if (customImage === false) continue
+            if (customImage && customImage !== true) {
+                const img = typeof customImage === 'string' ? await getLoadedImage(customImage) : customImage
+                newTextures[itemName] = {
+                    u: 0,
+                    v: 0,
+                    su: 1,
+                    sv: 1,
+                    img
+                }
+                continue
+            }
+            const info = this.getTextureInfo(version, itemName)
+            if (!info) throw new Error(`Missing texture info for ${itemName}`)
+            const { u, v, su, sv } = info
+            const atlas = info.version === 'latest' ? itemsAtlases.latest : itemsAtlases.legacy!
+            const image = info.imageName === 'latest' ? latestImg : legacyImg
+            if (!image) throw new Error(`Missing image for ${itemName}`)
+            newTextures[itemName] = {
+                u,
+                v,
+                su: su ?? atlas.suSv,
+                sv: sv ?? atlas.suSv,
+                img: image
+            }
+        }
+
+        let canvas!: HTMLCanvasElement
+        const {json} = makeTextureAtlas({
+            input: Object.keys(newTextures),
+            getCanvas() {
+                canvas = document.createElement('canvas')
+                return canvas as any
+            },
+            getLoadedImage: (name) => {
+                const texture = newTextures[name]!
+                const image = texture.img
+                const imgSize = image.width
+                //@ts-ignore we no longer need the image, remove from atlas
+                delete texture.img
+                return {
+                    image,
+                    // renderWidth: texture.su * imgSize,
+                    // renderHeight: texture.sv * imgSize,
+                    renderSourceStartX: texture.u * imgSize,
+                    renderSourceStartY: texture.v * imgSize,
+                    renderSourceWidth: texture.su * imgSize,
+                    renderSourceHeight: texture.sv * imgSize,
+                }
+            },
+            tileSize: this.atlas.latest.tileSize,
+        })
+
+        return {
+            canvas,
+            atlas: json
+        }
+    }
+
+    // getTextureBase64(version: string, itemName: string) {
+    //     if (type === 'item') {
+    //         return this.itemsAtlasStore.get(version, itemName)
+    //     } else if (type === 'block') {
+    //         return this.blocksAtlasStore.get(version, itemName)
+    //     }
+    //     throw new Error(`unknown get type ${type}`)
+    // }
+}
+
+const getLoadedImage = async (url: string) => {
+    const img = new Image()
+    img.src = url
+    await new Promise((resolve, reject) => {
+        img.onload = resolve
+        img.onerror = reject
+    })
+    return img
+}

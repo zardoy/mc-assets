@@ -1,0 +1,9 @@
+{
+    "extends": "@zardoy/tsconfig/node",
+    "compilerOptions": {
+        "target": "ES2022"
+    },
+    "include": [
+        "src"
+    ]
+}

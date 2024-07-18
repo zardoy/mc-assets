@@ -1,0 +1,50 @@
+{
+    "name": "mc-assets",
+    "version": "0.0.0-dev",
+    "author": "Vitaly Turovsky <vital2580@icloud.com>",
+    "license": "MIT",
+    "scripts": {
+        "build": "tsx src/datapaths-builder.ts && tsx src/newAssetsBuilder.ts && tsx src/genItemsAtlas.ts && tsx src/genParticles.ts && tsx src/genBlocks.ts && tsx src/copyOtherTextures.ts && tsx src/compressImages.ts && pnpm type-check && pnpm build-consumer && pnpm build-web",
+        "type-check": "tsc --noEmit",
+        "build-consumer": "tsc -p tsconfig.consumer.json",
+        "build-web": "cd web-demo/ && pnpm build"
+    },
+    "devDependencies": {
+        "@types/node": "^20.14.8",
+        "@types/three": "^0.166.0",
+        "@xmcl/core": "^2.13.0",
+        "@xmcl/installer": "^5.4.0",
+        "@zardoy/tsconfig": "^1.5.1",
+        "canvas": "^2.11.2",
+        "filesize": "^10.1.4",
+        "imagemin": "^9.0.0",
+        "imagemin-optipng": "^8.0.0",
+        "looks-same": "^9.0.0",
+        "node-stream-zip": "^1.15.0",
+        "semver": "^7.6.2",
+        "three": "^0.166.1",
+        "tsx": "^4.16.2",
+        "typescript": "^5.5.2",
+        "vitest": "^2.0.2"
+    },
+    "release": {
+        "initialRelease": {
+            "version": "0.1.0"
+        }
+    },
+    "keywords": [
+        "minecraft",
+        "assets",
+        "minecraft-assets",
+        "minecraft assets",
+        "minecraft data",
+        "minecraft textures",
+        "minecraft block states",
+        "minecraft models",
+        "minecraft blocks",
+        "minecraft items",
+        "minecraft colors",
+        "minecraft parser",
+        "minecraft extracter"
+    ]
+}

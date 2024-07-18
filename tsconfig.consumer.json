@@ -1,0 +1,13 @@
+{
+    "extends": "@zardoy/tsconfig/",
+    "compilerOptions": {
+        "target": "ES2022",
+        "noEmit": false,
+        "declaration": true,
+        // "sourceMap": true, // source maps are not published
+        "outDir": "dist"
+    },
+    "include": [
+        "src/consumer"
+    ]
+}
