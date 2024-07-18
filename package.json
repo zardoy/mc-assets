@@ -4,7 +4,7 @@
     "author": "Vitaly Turovsky <vital2580@icloud.com>",
     "license": "MIT",
     "scripts": {
-        "build": "tsx src/datapaths-builder.ts && tsx src/newAssetsBuilder.ts && tsx src/genItemsAtlas.ts && tsx src/genParticles.ts && tsx src/genBlocks.ts && tsx src/copyOtherTextures.ts && tsx src/compressImages.ts && pnpm type-check && pnpm build-consumer && pnpm build-web",
+        "build": "tsx src/datapaths-builder.ts && tsx src/newAssetsBuilder.ts && tsx src/genItemsAtlas.ts && tsx src/genParticles.ts && tsx src/genBlocks.ts && tsx src/copyOtherTextures.ts && tsx src/compressImages.ts && pnpm type-check && pnpm build-consumer && pnpm build-web && tsx src/buildEndChecks.ts",
         "type-check": "tsc --noEmit",
         "build-consumer": "tsc -p tsconfig.consumer.json",
         "build-web": "cd web-demo/ && pnpm build"

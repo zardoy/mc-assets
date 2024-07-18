@@ -14,7 +14,7 @@ jobs:
           version: latest
           run_install: |
             args: [--no-frozen-lockfile, --strict-peer-dependencies]
-      - run: mkdir ./data && git --work-tree=./data checkout gh-pages -- .
+      - run: mkdir ./data && git --work-tree=./data checkout gh-pages -- . && git reset
       - id: shouldContinue
         run: pnpx tsx src/checkNeedsPublish.ts
       - run: echo $OUTPUT

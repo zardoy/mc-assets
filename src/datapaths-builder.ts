@@ -18,7 +18,7 @@ let versionsDataPaths = {
     }
 }
 try {
-    // versionsDataPaths = JSON.parse(fs.readFileSync('./data/data-paths.json', 'utf8'))
+    versionsDataPaths = JSON.parse(fs.readFileSync('./data/data-paths.json', 'utf8'))
 } catch (e) {
     console.log('data-paths.json not found, creating...')
 }
