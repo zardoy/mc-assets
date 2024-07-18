@@ -9,6 +9,11 @@
         "build-consumer": "tsc -p tsconfig.consumer.json",
         "build-web": "cd web-demo/ && pnpm build"
     },
+    "files": [
+        "dist"
+    ],
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "devDependencies": {
         "@types/node": "^20.14.8",
         "@types/three": "^0.166.0",
@@ -28,7 +33,7 @@
         "vitest": "^2.0.2"
     },
     "release": {
-        "initialRelease": {
+        "initialVersion": {
             "version": "0.1.0"
         }
     },
