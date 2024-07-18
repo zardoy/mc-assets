@@ -38,10 +38,6 @@ export type ItemsAtlasesOutputJson = {
 const usedInvsprite = [] as string[]
 
 export const generateItemsAtlases = async () => {
-  // const allTextures
-
-  let allActualItemsJson = JSON.parse(fs.readFileSync('./src/items.json', 'utf8'))
-
   const parentReferences = {} as Record<string, string[]>
   const allModels = blockstatesModels.models;
   const latestModels = allModels.latest;
