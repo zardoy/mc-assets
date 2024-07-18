@@ -62,6 +62,10 @@ export const makeTextureAtlas = (
 } => {
     const tilesCount = input.length
     const imgSize = getAtlasSize(tilesCount, tileSize).width
+    const MAX_CANVAS_SIZE = 16_384
+    if (imgSize > MAX_CANVAS_SIZE) {
+        throw new Error(`Image resolution ${imgSize} is too big, max is ${MAX_CANVAS_SIZE}x${MAX_CANVAS_SIZE}`)
+    }
 
     const canvas = getCanvas(imgSize)
     canvas.width = imgSize
