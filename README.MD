@@ -21,3 +21,14 @@ This module was originally designed as standalone package for [https://mcraft.fu
 
 > Bundled modules & block states are version-accurate starting from 1.13.0 (post-flattening) version.
 > Tested on Node.js 18 and above.
+
+## Usage
+
+```ts
+import { AssetsParser, getLoadedModelsStore, getLoadedBlockstatesStore } from 'mc-assets'
+import blockstatesModels from 'mc-assets/dist/blockStatesModels.json'
+
+const modelsStore = getLoadedModelsStore(blockstatesModels)
+const blockstatesStore = getLoadedBlockstatesStore(blockstatesModels)
+const assetsParser = new AssetsParser('latest', blockstatesStore, modelsStore)
+```
