@@ -13,7 +13,7 @@ jobs:
           version: latest
           run_install: |
             args: [--no-frozen-lockfile, --strict-peer-dependencies]
-      - run: mkdir ./data && git checkout gh-pages ./data/
+      - run: mkdir ./data && git --work-tree=./data checkout gh-pages -- .
       - name: Set publishing config
         run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
         env:
