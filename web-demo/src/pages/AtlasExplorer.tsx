@@ -12,6 +12,8 @@ import particlesAtlasLegacy from '../../../dist/particlesAtlasLegacy.png'
 import parserAtlasLegacy from '../../../dist/itemsAtlasLegacy.png'
 import { AtlasParser } from '../../../src/consumer/atlasParser'
 
+globalThis.blockStatesModels = blockStatesModels
+
 export default function AtlasExplorer() {
     const canvasRef = useRef<HTMLCanvasElement>(null!)
     const [selectedAtlas, setSelectedAtlas] = useState<'items' | 'items-legacy' | 'blocks' | 'blocks-legacy' | 'particles' | 'particles-legacy' | 'items-all-render' | 'blocks-all-render'>('items')
