@@ -3,7 +3,7 @@ import { makeTextureAtlas } from './atlas'
 import { join } from 'path'
 
 const rawData = JSON.parse(fs.readFileSync('./data/data-paths.json', 'utf8'))
-const blockstatesModels = JSON.parse(fs.readFileSync('./temp/blockStatesModels.json', 'utf8'))
+const blockstatesModels = JSON.parse(fs.readFileSync('./dist/blockStatesModels.json', 'utf8'))
 
 
 blockstatesModels.blockstates.latest['unknown'] = {
