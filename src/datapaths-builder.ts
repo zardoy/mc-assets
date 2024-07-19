@@ -19,7 +19,6 @@ let versionsDataPaths = {
 }
 try {
     versionsDataPaths = JSON.parse(fs.readFileSync('./data/data-paths.json', 'utf8'))
-    delete versionsDataPaths['1.21']
 } catch (e) {
     console.log('data-paths.json not found, creating...')
 }
@@ -192,7 +191,6 @@ const main = async () => {
     // also include latest pre-release or rc
     const versionsRaw = (await getVersionList()).versions;
     const versions = versionsRaw.filter((v) => {
-        if (versionToNumber(v.id) === versionToNumber("1.21")) return false;
         if (versionToNumber(v.id) < versionToNumber("1.7.10")) return false;
         return v.type === "release";
     }).reverse() // from oldest to newest // from oldest to newest
