@@ -1,5 +1,7 @@
 import fs from 'fs'
 
+if (!process.env.CI) process.exit(0)
+
 let readme = fs.readFileSync('./README.MD', 'utf8')
 const bundleSize = fs.readFileSync('./temp/bundleWebAppSize.txt', 'utf8')
 const dataPaths = JSON.parse(fs.readFileSync('./data/data-paths.json', 'utf8'));

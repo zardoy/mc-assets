@@ -14,7 +14,7 @@ blockstatesModels.blockstates.latest['unknown'] = {
     }
 }
 const texturesAddLatest = {
-    'block/unknown': '../custom/missing_texture.png'
+    'unknown': '../custom/missing_texture.png'
 }
 blockstatesModels.models.latest['block/unknown'] = {
     "parent": "block/cube_all",
