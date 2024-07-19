@@ -16,6 +16,8 @@ npm i mc-assets
 - **Version Accurate** - Includes all released versions starting from 1.7.10.
 - **Memory Efficient** - Small installation size, for the fastest download & loading time.
 - **Simple & Complete API** - Works in browsers out of the box and provides parsers for all the data this library provides.
+- **Easy to Use Items Textures** - Includes hand-crafted isometric textures for some blocks (50% done).
+<!-- - **Models Complete** - Includes hand-crafted models for block entities. -->
 
 This module was originally designed as standalone package for [https://mcraft.fun](mcraft.fun) (repo) project so it is easier to maintain, but now it became a library that I think can cover any use case where you need to work with minecraft assets. This library means block states, models data and texture contents, it doesn't cover minecraft-data use cases.
 
