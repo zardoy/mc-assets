@@ -14,12 +14,12 @@ blockstatesModels.blockstates.latest['unknown'] = {
     }
 }
 const texturesAddLatest = {
-    'blocks/unknown': '../custom/missing_texture.png'
+    'block/unknown': '../custom/missing_texture.png'
 }
 blockstatesModels.models.latest['block/unknown'] = {
     "parent": "block/cube_all",
     "textures": {
-        "all": "blocks/unknown"
+        "all": "block/unknown"
     }
 }
 
@@ -36,6 +36,7 @@ const makeAtlas = (name, textures) => {
 }
 
 const latestAtlas = makeAtlas('blocksAtlasLatest', {
+    ...texturesAddLatest,
     ...Object.fromEntries(Object.entries(rawData.latest['textures/']).filter(([key]) => {
         return (key.startsWith('blocks/')) && key.endsWith('.png')
     }).map(([key, path]) => [key.replace('blocks/', ''), path])),
@@ -56,6 +57,7 @@ for (const version of Object.keys(rawData)) {
 
 const legacyAtlas = makeAtlas('blocksAtlasLegacy', legacyTextures)
 
+fs.writeFileSync('./dist/blockStatesModels.json', JSON.stringify(blockstatesModels, null, 4), 'utf8')
 fs.writeFileSync('./dist/blocksAtlases.json', JSON.stringify({
     latest: latestAtlas,
     legacy: legacyAtlas

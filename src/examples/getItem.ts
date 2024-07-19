@@ -2,12 +2,16 @@ import fs from 'fs'
 import { join } from 'path'
 import { BlockModel, BlockStates, ItemModel } from '../consumer/types'
 import { VersionedStore } from '../consumer/versionedStore'
+import { AtlasParser } from '../consumer'
 
-console.time('parse')
+//@ts-ignore
+import itemsAtlases from '../../dist/itemsAtlases.json'
+//@ts-ignore
+import blocksAtlases from '../../dist/blocksAtlases.json'
+import { ItemsRenderer } from '../consumer/itemsRenderer'
+
 const blockstatesModels = JSON.parse(fs.readFileSync('./dist/blockStatesModels.json', 'utf8'))
-console.timeEnd('parse')
 
-const blockstates = new VersionedStore<BlockStates>()
-blockstates.loadData(blockstatesModels.blockstates)
-
-console.log(blockstates.get('1.20.2', 'stone')?.variants?.[''])
+const itemsAtlasParser = new AtlasParser(itemsAtlases, '')
+const blocksAtlasParser = new AtlasParser(blocksAtlases, '')
+console.log(new ItemsRenderer('latest', blockstatesModels, itemsAtlasParser, blocksAtlasParser).getItemTexture('oak_sapling'))

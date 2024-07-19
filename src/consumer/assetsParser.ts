@@ -22,7 +22,7 @@ export class AssetsParser {
 
         const result = this.getElements(queriedBlock)
         const final = result === 0 ? [] : result
-        this.stateIdToElements[stateId] = final
+        this.stateIdToElements[stateId] = final as 1 | BlockElement[]
         return final
     }
 
@@ -52,7 +52,6 @@ export class AssetsParser {
                 return properties.OR.some((or) => matchProperties(block, or))
             }
             for (const prop in properties) {
-                // if (properties[prop] === undefined) continue // unknown property, ignore
                 if (typeof properties[prop] !== 'string') properties[prop] = String(properties[prop])
                 if (!(properties[prop] as string).split('|').some((value) => value === String(blockProps[prop]))) {
                     return false
@@ -66,7 +65,7 @@ export class AssetsParser {
         if (!blockStates) return 0
         const states = blockStates.variants
         if (states) {
-            let state = states['']
+            let state = states[''] || states['normal']
             for (const key in states) {
                 if (key === '') continue
                 if (matchProperties(queriedBlock, key)) {
@@ -100,18 +99,20 @@ export class AssetsParser {
             }
         }
         if (!modelApply) return 0
-        // const model = Array.isArray(state) ? state[Math.floor(Math.random() * state.length)] : state
-        // TODO! not always 0
-        const model = (Array.isArray(modelApply) ? modelApply[0]! : modelApply).model
+        // TODO losing x, y, uvlock, and not 0!
+        const model = (Array.isArray(modelApply) ? modelApply[0/* Math.floor(Math.random() * modelApply.length) */]! : modelApply).model
+        return this.getResolvedModelByModelName(model, queriedBlock.name)?.elementsOptimized ?? 0
+    }
+
+    getResolvedModelByModelName(model: string, debugQueryName?: string, clearModel = true) {
+        if (clearModel) {
+            this.resolvedModel = {}
+        }
         const modelData = this.blockModelsStore.get(this.version, model)
-        if (!modelData) return 0
+        if (!modelData) return
         // let textures = {} as Record<string, string>
         let elements = [] as BlockElement[]
         const resolveModel = (model: BlockModel) => {
-            if (model.elements) {
-                elements.push(...model.elements.map(({ from, to }) => [from, to] as BlockElement))
-            }
-
             if (model.ambientocclusion !== undefined) {
                 this.resolvedModel.ao = model.ambientocclusion
             }
@@ -134,8 +135,10 @@ export class AssetsParser {
             }
 
             if (model.elements) {
+                elements.push(...model.elements.map(({ from, to }) => [from, to] as BlockElement))
+
                 this.resolvedModel.elements ??= []
-                this.resolvedModel.elements.push(...model.elements)
+                this.resolvedModel.elements.push(...structuredClone(model.elements))
             }
 
             if (model.parent) {
@@ -154,7 +157,7 @@ export class AssetsParser {
                 if (!existingKey) {
                     // todo this also needs to be done at the validation stage
                     // throw new Error(`Cannot resolve texture ${key} to ${value} because it is not defined`)
-                    console.warn(`${queriedBlock.name}: Cannot resolve texture ${originalTexturePath} for ${_originalKey} because it is not defined`)
+                    console.warn(`${debugQueryName}: Cannot resolve texture ${originalTexturePath} for ${_originalKey} because it is not defined`)
                 } else {
                     return existingKey
                 }
@@ -167,7 +170,18 @@ export class AssetsParser {
             if (resolved) this.resolvedModel.textures![key] = resolved
             else delete this.resolvedModel.textures![key]
         }
-        return elements.length === 1 && arrEq(elements[0]![0], [0, 0, 0]) && arrEq(elements[0]![1], [16, 16, 16]) ? 1 : elements
+        for (const elem of this.resolvedModel.elements ?? []) {
+            for (const [faceName, face] of Object.entries(elem.faces ?? {})) {
+                if (!face.texture) continue
+                // TODO validate at the validation stage
+                face.texture = this.resolvedModel.textures![face.texture.replace('#', '')] ?? face.texture
+            }
+        }
+        // todo cleanup methods
+        return {
+            elementsOptimized: elements.length === 1 && arrEq(elements[0]![0], [0, 0, 0]) && arrEq(elements[0]![1], [16, 16, 16]) ? 1 : elements,
+            resolvedModel: this.resolvedModel,
+        }
     }
 
     getResolvedModel(queriedBlock: Omit<QueriedBlock, 'stateId'>, fallbackVariant = false) {
@@ -183,5 +197,3 @@ export class AssetsParser {
 }
 
 const arrEq = <T>(a: T[], b: T[]) => !!a && !!b && a.length === b.length && a.every((v, i) => v === b[i])
-
-// for each element + texture

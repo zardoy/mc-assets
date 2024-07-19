@@ -4,6 +4,7 @@ import { getAtlasSize, makeTextureAtlas } from './atlasCreator'
 type Texture = {
     u: number
     v: number
+    tileIndex: number
     su?: number
     sv?: number
 }
@@ -24,7 +25,7 @@ interface ItemsAtlases {
     legacy?: ItemsAtlasesOutputJson
 }
 
-type StoreType = Texture & { imageName: string, version: string }
+type StoreType = Texture & { imageType: 'latest' | 'legacy', version: string }
 type DataUrl = string
 export class AtlasParser {
     atlasStore: VersionedStore<StoreType>
@@ -39,9 +40,9 @@ export class AtlasParser {
         this.atlasStore = new VersionedStore<StoreType>()
         this.atlasStore.inclusive = false
         const itemsAtlases = atlasJson as ItemsAtlases
-        const addByVersion = (store: VersionedStore<StoreType>, version: string, textures: Record<string, Texture>, imageKey: string) => {
+        const addByVersion = (store: VersionedStore<StoreType>, version: string, textures: Record<string, Texture>, imageName: 'latest' | 'legacy') => {
             for (const [key, path] of Object.entries(textures)) {
-                store.push(version, key, {...path, version, imageName: imageKey})
+                store.push(version, key, {...path, version, imageType: imageName})
             }
         }
         addByVersion(this.atlasStore, 'latest', itemsAtlases.latest.textures, 'latest')
@@ -58,14 +59,17 @@ export class AtlasParser {
         return this.atlasJson as ItemsAtlases
     }
 
-    getTextureInfo(version: string, itemName: string) {
+    getTextureInfo(itemName: string, version = 'latest') {
         const info = this.atlasStore.get(version, itemName);
         if (!info) return
-        const defaultSuSv = (info?.imageName === 'latest' ? this.atlas.latest : this.atlas.legacy!).suSv
+        const defaultSuSv = (info.imageType === 'latest' ? this.atlas.latest : this.atlas.legacy!).suSv
         return {
             ...info,
             su: info?.su ?? defaultSuSv,
             sv: info?.sv ?? defaultSuSv,
+            getLoadedImage: async () => {
+                return await getLoadedImage(info.imageType === 'latest' ? this.latestImage : this.legacyImage!)
+            }
         }
     }
 
@@ -95,11 +99,11 @@ export class AtlasParser {
                 }
                 continue
             }
-            const info = this.getTextureInfo(version, itemName)
+            const info = this.getTextureInfo(itemName, version)
             if (!info) throw new Error(`Missing texture info for ${itemName}`)
             const { u, v, su, sv } = info
             const atlas = info.version === 'latest' ? itemsAtlases.latest : itemsAtlases.legacy!
-            const image = info.imageName === 'latest' ? latestImg : legacyImg
+            const image = info.imageType === 'latest' ? latestImg : legacyImg
             if (!image) throw new Error(`Missing image for ${itemName}`)
             newTextures[itemName] = {
                 u,
@@ -136,9 +140,19 @@ export class AtlasParser {
             tileSize: this.atlas.latest.tileSize,
         })
 
+        let _newAtlasParser: AtlasParser | undefined
         return {
             canvas,
-            atlas: json
+            atlas: json,
+            get newAtlasParser() {
+                if (!_newAtlasParser) {
+                    _newAtlasParser = new AtlasParser({ latest: json }, canvas.toDataURL())
+                }
+                return _newAtlasParser
+            },
+            get image() {
+                return canvas.toDataURL()
+            }
         }
     }
 

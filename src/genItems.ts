@@ -6,7 +6,7 @@ import { filesize } from 'filesize'
 import { makeTextureAtlas, writeCanvasStream } from './atlas'
 import looksSame from 'looks-same' // ensure after canvas import
 import { versionToNumber } from './utils'
-import { AssetsParser } from './consumer/parser'
+import { AssetsParser } from './consumer/assetsParser'
 import { getLoadedBlockstatesStore, getLoadedModelsStore } from './consumer'
 import { ItemModel } from './consumer/types'
 import { Image, createCanvas } from 'canvas'

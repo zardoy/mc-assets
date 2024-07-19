@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { AssetsParser } from '../consumer/parser'
+import { AssetsParser } from '../consumer/assetsParser'
 import { VersionedStore } from '../consumer/versionedStore'
 import { getLoadedBlockstatesStore, getLoadedModelsStore } from '../consumer'
 
@@ -7,10 +7,16 @@ const blockstatesModels = JSON.parse(fs.readFileSync('./dist/blockStatesModels.j
 
 const assetsParser = new AssetsParser('latest', getLoadedBlockstatesStore(blockstatesModels), getLoadedModelsStore(blockstatesModels))
 
-console.log(assetsParser.getResolvedModel({
+const modelsStore = getLoadedModelsStore(blockstatesModels)
+
+console.dir(assetsParser.getResolvedModel({
     name: 'stone',
     properties: {},
-}))
+}), {
+    depth: 4,
+})
+
+// console.log(modelsStore.get('latest', 'block/stone_mirrored'))
 
 // const versionedStore = new VersionedStore();
 // versionedStore.push('latest', 'key', 'data')

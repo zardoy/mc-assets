@@ -1,5 +1,5 @@
 import { AtlasParser } from './atlasParser'
-import { AssetsParser, QueriedBlock } from './parser'
+import { AssetsParser, QueriedBlock } from './assetsParser'
 import { getLoadedBlockstatesStore, getLoadedModelsStore } from './stores'
 
 export default function worldBlockProvider(blockstatesModels: any, blocksAtlas: any, version: string) {
@@ -14,15 +14,15 @@ export default function worldBlockProvider(blockstatesModels: any, blocksAtlas: 
 
             const interestedFaces = ['north', 'east', 'south', 'west', 'up', 'down']
 
+            const { elements, textures, ...rest } = model
+
             return {
                 // todo validate elements
-                elements: model.elements?.map((elem) => {
+                elements: elements?.map((elem) => {
                     return {
-                        from: elem.from,
-                        to: elem.to,
+                        ...elem,
                         faces: Object.fromEntries(Object.entries(elem.faces).map(([faceName, face]) => {
-                            const texture = model.textures![face.texture.replace('#', '')];
-                            // TODO validate at the validation stage
+                            const texture = face.texture
                             if (!texture) throw new Error(`Missing resolved texture ${texture} for face ${faceName} of ${block.name}`)
                             const finalTexture = this.getTextureInfo(texture)
                             if (!finalTexture) throw new Error(`Missing texture data ${texture} for ${block.name}`)
@@ -46,26 +46,24 @@ export default function worldBlockProvider(blockstatesModels: any, blocksAtlas: 
                             const sv = (uv[3] - uv[1]) / COORDINATE_MAX * finalTexture.sv
 
                             return [faceName, {
+                                ...face,
                                 texture: {
-                                    ...finalTexture,
                                     u: finalTexture.u + uv[0] / 16 * finalTexture.su,
                                     v: finalTexture.v + uv[1] / 16 * finalTexture.sv,
                                     su,
-                                    sv
+                                    sv,
+                                    tileIndex: finalTexture.tileIndex,
+                                    debugName: texture,
                                 },
-                                cullface: face.cullface
                             }]
                         }))
                     }
                 }),
-                ao: model.ao,
-                x: model.x,
-                y: model.y,
-                z: model.z,
+                ...rest
             }
         },
         getTextureInfo(textureName: string) {
-            return atlasParser.getTextureInfo(version, textureName.replace('block/', ''))
+            return atlasParser.getTextureInfo(textureName.replace('block/', ''), version)
         }
     }
 }

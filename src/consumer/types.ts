@@ -41,11 +41,19 @@ export type BlockModel = {
     elements?: {
         from: BlockElementPos
         to: BlockElementPos
+        rotation?: {
+            origin: [number, number, number]
+            axis: string
+            angle: number
+            rescale?: boolean
+        }
         faces: {
             [name: string]: {
                 texture: string
                 uv?: number[]
                 cullface?: string
+                rotation?: number
+                tintindex?: number
             }
         }
     }[]
