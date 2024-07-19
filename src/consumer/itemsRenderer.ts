@@ -48,9 +48,9 @@ export class ItemsRenderer {
         const leftTexture = elem.faces.east?.texture ?? elem.faces.left?.texture ?? elem.faces.side?.texture!
         const rightTexture = elem.faces.north?.texture ?? elem.faces.right?.texture ?? elem.faces.side?.texture!
         return {
-            top: this.resolveTexture(topTexture, 'blocks'),
-            left: this.resolveTexture(leftTexture, 'blocks'),
-            right: this.resolveTexture(rightTexture, 'blocks'),
+            top: this.resolveTexture(topTexture),
+            left: this.resolveTexture(leftTexture),
+            right: this.resolveTexture(rightTexture),
         }
     }
 
@@ -67,7 +67,7 @@ export class ItemsRenderer {
         if (!model) return
         const layer0 = model.textures?.layer0
         if (!layer0) return
-        return this.resolveTexture(layer0, 'items')
+        return this.resolveTexture(layer0)
         // const {resolvedModel} = this.assetsParser.getResolvedModelByModelName('item/' + itemName, itemName) ?? {}
         // resolvedModel?.textures['layer0']
     }
