@@ -1,0 +1,6 @@
+{
+    "parent": "block/sign/sign_wall",
+    "textures": {
+        "sign": "entity/signs/cherry"
+    }
+}

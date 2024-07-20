@@ -1,0 +1,19 @@
+{
+    "variants": {
+        "facing=east": {
+            "model": "entity/spruce_wall_hanging_sign",
+            "y": 90
+        },
+        "facing=south": {
+            "model": "entity/spruce_wall_hanging_sign",
+            "y": 180
+        },
+        "facing=west": {
+            "model": "entity/spruce_wall_hanging_sign",
+            "y": 270
+        },
+        "facing=north": {
+            "model": "entity/spruce_wall_hanging_sign"
+        }
+    }
+}

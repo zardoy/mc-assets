@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { createCanvas, Image } from 'canvas'
-import { makeTextureAtlas } from './atlas'
+import { makeTextureAtlas } from './atlasNode'
 
 const invsprite = JSON.parse(fs.readFileSync('./custom/invsprite.json', 'utf8'))
 const included = JSON.parse(fs.readFileSync('./inv.json', 'utf8'))

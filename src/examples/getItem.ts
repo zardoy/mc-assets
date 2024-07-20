@@ -14,4 +14,6 @@ const blockstatesModels = JSON.parse(fs.readFileSync('./dist/blockStatesModels.j
 
 const itemsAtlasParser = new AtlasParser(itemsAtlases, '')
 const blocksAtlasParser = new AtlasParser(blocksAtlases, '')
-console.log(new ItemsRenderer('latest', blockstatesModels, itemsAtlasParser, blocksAtlasParser).getItemTexture('oak_sapling'))
+
+console.log(blocksAtlasParser.getTextureInfo("entity/decorated_pot/decorated_pot_base"))
+// console.log(new ItemsRenderer('latest', blockstatesModels, itemsAtlasParser, blocksAtlasParser).getItemTexture('oak_sapling'))

@@ -1,10 +1,9 @@
 import fs from 'fs'
-import { makeTextureAtlas } from './atlas'
+import { makeTextureAtlas } from './atlasNode'
 import { join } from 'path'
 
 const rawData = JSON.parse(fs.readFileSync('./data/data-paths.json', 'utf8'))
-const blockstatesModels = JSON.parse(fs.readFileSync('./dist/blockStatesModels.json', 'utf8'))
-
+const blockstatesModels = JSON.parse(fs.readFileSync('./temp/blockStatesModels.json', 'utf8'))
 
 blockstatesModels.blockstates.latest['unknown'] = {
     variants: {
@@ -13,13 +12,25 @@ blockstatesModels.blockstates.latest['unknown'] = {
         }
     }
 }
-const texturesAddLatest = {
+const texturesAddFirst = {
     'unknown': '../custom/missing_texture.png'
 }
+const texturesAddLast = {}
 blockstatesModels.models.latest['block/unknown'] = {
     "parent": "block/cube_all",
     "textures": {
         "all": "block/unknown"
+    }
+}
+
+for (const [name, {textures = {}}] of Object.entries(blockstatesModels.models.latest)) {
+    for (const texture of Object.values(textures as Record<string, string>)) {
+        const textureNameClean = texture.replace('block/', '');
+        const textureNamePath = textureNameClean+'.png';
+        if (!textureNamePath.startsWith('entity/')) continue
+        const texturePath = rawData.latest['textures/'][textureNamePath];
+        if (!texturePath) throw new Error(`Missing texture ${textureNamePath}: ${texture}`)
+        texturesAddLast[textureNameClean] = texturePath
     }
 }
 
@@ -29,6 +40,8 @@ const makeAtlas = (name, textures) => {
         const contents = `data:image/png;base64,${fs.readFileSync(join('data', `${texPath}`), 'base64')}`
         return {
             contents,
+            // todo
+            useOriginalSize: name.includes('entity/'),
         }
     })
     fs.writeFileSync(`./dist/${name}.png`, image)
@@ -36,10 +49,11 @@ const makeAtlas = (name, textures) => {
 }
 
 const latestAtlas = makeAtlas('blocksAtlasLatest', {
-    ...texturesAddLatest,
+    ...texturesAddFirst,
     ...Object.fromEntries(Object.entries(rawData.latest['textures/']).filter(([key]) => {
         return (key.startsWith('blocks/')) && key.endsWith('.png')
     }).map(([key, path]) => [key.replace('blocks/', ''), path])),
+    ...texturesAddLast
 })
 
 const legacyTextures = {} as Record<string, string>

@@ -10,9 +10,9 @@ const assetsParser = new AssetsParser('latest', getLoadedBlockstatesStore(blocks
 const modelsStore = getLoadedModelsStore(blockstatesModels)
 
 console.dir(assetsParser.getResolvedModel({
-    name: 'stone',
+    name: 'oak_sign',
     properties: {},
-}), {
+}, true), {
     depth: 4,
 })
 

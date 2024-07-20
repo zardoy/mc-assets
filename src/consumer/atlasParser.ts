@@ -46,7 +46,7 @@ export class AtlasParser {
             }
         }
         addByVersion(this.atlasStore, 'latest', itemsAtlases.latest.textures, 'latest')
-        this.atlasHasLegacyImage = !!itemsAtlases.legacy
+        this.atlasHasLegacyImage = !!legacyImage
         if (legacyImage && itemsAtlases.legacy) {
             for (const key of Object.keys(itemsAtlases.legacy.textures)) {
                 const [version, name] = key.split('/')
@@ -114,13 +114,8 @@ export class AtlasParser {
             }
         }
 
-        let canvas!: HTMLCanvasElement
-        const {json} = makeTextureAtlas({
+        const { json, canvas } = makeTextureAtlas({
             input: Object.keys(newTextures),
-            getCanvas() {
-                canvas = document.createElement('canvas')
-                return canvas as any
-            },
             getLoadedImage: (name) => {
                 const texture = newTextures[name]!
                 const image = texture.img
@@ -129,8 +124,8 @@ export class AtlasParser {
                 delete texture.img
                 return {
                     image,
-                    // renderWidth: texture.su * imgSize,
-                    // renderHeight: texture.sv * imgSize,
+                    renderWidth: texture.su * imgSize,
+                    renderHeight: texture.sv * imgSize,
                     renderSourceStartX: texture.u * imgSize,
                     renderSourceStartY: texture.v * imgSize,
                     renderSourceWidth: texture.su * imgSize,
@@ -169,6 +164,9 @@ export class AtlasParser {
 const getLoadedImage = async (url: string) => {
     const img = new Image()
     img.src = url
+    if (img.complete) {
+        return img
+    }
     await new Promise((resolve, reject) => {
         img.onload = resolve
         img.onerror = reject

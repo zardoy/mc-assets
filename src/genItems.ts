@@ -3,7 +3,7 @@ import { join } from 'path'
 import { filesize } from 'filesize'
 
 // todo remove
-import { makeTextureAtlas, writeCanvasStream } from './atlas'
+import { makeTextureAtlas, writeCanvasStream } from './atlasNode'
 import looksSame from 'looks-same' // ensure after canvas import
 import { versionToNumber } from './utils'
 import { AssetsParser } from './consumer/assetsParser'

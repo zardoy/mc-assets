@@ -1,0 +1,19 @@
+{
+    "variants": {
+        "facing=east": {
+            "model": "entity/warped_wall_hanging_sign",
+            "y": 90
+        },
+        "facing=south": {
+            "model": "entity/warped_wall_hanging_sign",
+            "y": 180
+        },
+        "facing=west": {
+            "model": "entity/warped_wall_hanging_sign",
+            "y": 270
+        },
+        "facing=north": {
+            "model": "entity/warped_wall_hanging_sign"
+        }
+    }
+}

@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { makeTextureAtlas } from './atlas'
+import { makeTextureAtlas } from './atlasNode'
 import { join } from 'path'
 
 const rawData = JSON.parse(fs.readFileSync('./data/data-paths.json', 'utf8'))

@@ -55,10 +55,11 @@ export const makeTextureAtlas = (
         input,
         getLoadedImage,
         tileSize = 16,
-        getCanvas = () => document.createElement('canvas'),
+        getCanvas = (imgSize) => typeof document !== 'undefined' && document.createElement ? document.createElement('canvas') : new globalThis.Canvas(imgSize, imgSize, 'png' as any),
     }: AtlasCreatorOptions
 ): {
     json: JsonAtlas
+    canvas: HTMLCanvasElement
 } => {
     const tilesCount = input.length
     const imgSize = getAtlasSize(tilesCount, tileSize).width
@@ -104,11 +105,14 @@ export const makeTextureAtlas = (
         let renderWidth = tileSize * (inputData.tileWidthMult ?? 1)
         let renderHeight = tileSize
         if (inputData.useOriginalSize || inputData.renderWidth || inputData.renderHeight) {
+            const texWidth = inputData.renderWidth ?? img.width
+            const texHeight = inputData.renderHeight ?? img.height
             // todo check have enough space
-            renderWidth = Math.ceil((inputData.renderWidth ?? img.width) / tileSize) * tileSize
-            renderHeight = Math.ceil((inputData.renderHeight ?? img.height) / tileSize) * tileSize
-            su = renderWidth / imgSize
-            sv = renderHeight / imgSize
+            renderWidth = Math.ceil(texWidth / tileSize) * tileSize
+            renderHeight = Math.ceil(texHeight / tileSize) * tileSize
+            su = texWidth / imgSize
+            sv = texHeight / imgSize
+            // renderWidth and renderHeight take full tile size so everything is aligned to the grid
             if (renderHeight > imgSize || renderWidth > imgSize) {
                 throw new Error('Texture ' + keyValue + ' is too big')
             }
@@ -132,8 +136,8 @@ export const makeTextureAtlas = (
         }
 
         const renderSourceDefaultSize = Math.min(img.width, img.height)
-        const renderSourceWidth = inputData.renderSourceWidth ?? renderSourceDefaultSize
-        const renderSourceHeight = inputData.renderSourceHeight ?? renderSourceDefaultSize
+        const renderSourceWidth = inputData.useOriginalSize ? img.width : inputData.renderSourceWidth ?? renderSourceDefaultSize
+        const renderSourceHeight = inputData.useOriginalSize ? img.height : inputData.renderSourceHeight ?? renderSourceDefaultSize
         try {
             g.drawImage(img, inputData.renderSourceStartX ?? 0, inputData.renderSourceStartY ?? 0, renderSourceWidth, renderSourceHeight, x, y, renderWidth, renderHeight)
         } catch (err) {
@@ -149,13 +153,14 @@ export const makeTextureAtlas = (
             ...su == suSv && sv == suSv ? {} : {
                 su,
                 sv,
-                width: renderWidth,
-                height: renderHeight
+                // width: renderWidth,
+                // height: renderHeight
             }
         }
     }
 
     return {
+        canvas,
         json: {
             suSv,
             tileSize,

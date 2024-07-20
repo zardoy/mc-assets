@@ -1,0 +1,7 @@
+{
+    "credit": "Made with Blockbench by TyBraniff for Bluemaps support.",
+    "parent": "block/entity/hanging_sign",
+    "textures": {
+        "wood": "entity/signs/hanging/mangrove"
+    }
+}

@@ -7,5 +7,6 @@
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
         "temp": true,
-    }
+    },
+    "typescript.format.semicolons": "remove"
 }
