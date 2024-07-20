@@ -1,5 +1,6 @@
 import { VersionedStore } from './versionedStore'
-import { getAtlasSize, makeTextureAtlas } from './atlasCreator'
+import { makeTextureAtlas } from './atlasCreator'
+import { getLoadedImage } from '../utils'
 
 type Texture = {
     u: number
@@ -159,17 +160,4 @@ export class AtlasParser {
     //     }
     //     throw new Error(`unknown get type ${type}`)
     // }
-}
-
-const getLoadedImage = async (url: string) => {
-    const img = new Image()
-    img.src = url
-    if (img.complete) {
-        return img
-    }
-    await new Promise((resolve, reject) => {
-        img.onload = resolve
-        img.onerror = reject
-    })
-    return img
 }
