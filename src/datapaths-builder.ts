@@ -1,6 +1,6 @@
 import { getVersionList, MinecraftVersion, install, installAssets, installVersion } from "@xmcl/installer";
 import { MinecraftLocation, Version, MinecraftFolder } from "@xmcl/core";
-import { versionToNumber } from './utils';
+import { versionToNumber } from './consumer/utils';
 import fs from 'fs';
 import path from 'path';
 import NodeStreamZip from 'node-stream-zip';

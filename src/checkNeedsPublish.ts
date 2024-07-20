@@ -1,7 +1,7 @@
 import { getVersionList, MinecraftVersion, install, installAssets, installVersion } from "@xmcl/installer";
 import semver from 'semver'
 import fs from 'fs'
-import { versionToNumber } from './utils';
+import { versionToNumber } from './consumer/utils';
 
 const main = async () => {
     const latestVersion = (await getVersionList()).versions.find(v => v.type === 'release' || v.id.includes('-rc') || v.id.includes('-pre'))!

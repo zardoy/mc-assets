@@ -1,6 +1,6 @@
 import { VersionedStore } from './versionedStore'
 import { makeTextureAtlas } from './atlasCreator'
-import { getLoadedImage } from '../utils'
+import { getLoadedImage } from './utils'
 
 type Texture = {
     u: number
