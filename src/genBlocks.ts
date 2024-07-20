@@ -3,7 +3,11 @@ import { makeTextureAtlas } from './atlasNode'
 import { join } from 'path'
 
 const rawData = JSON.parse(fs.readFileSync('./data/data-paths.json', 'utf8'))
-const blockstatesModels = JSON.parse(fs.readFileSync('./temp/blockStatesModels.json', 'utf8'))
+const blockstatesModels = JSON.parse(
+    fs.existsSync('./dist/blockStatesModels.json')
+        ? fs.readFileSync('./dist/blockStatesModels.json', 'utf8')
+        : fs.readFileSync('./temp/blockStatesModels.json', 'utf8')
+)
 
 blockstatesModels.blockstates.latest['unknown'] = {
     variants: {
@@ -23,12 +27,12 @@ blockstatesModels.models.latest['block/unknown'] = {
     }
 }
 
-for (const [name, {textures = {}}] of Object.entries(blockstatesModels.models.latest)) {
+for (const [name, { textures = {} }] of Object.entries(blockstatesModels.models.latest)) {
     for (const texture of Object.values(textures as Record<string, string>)) {
-        const textureNameClean = texture.replace('block/', '');
-        const textureNamePath = textureNameClean+'.png';
+        const textureNameClean = texture.replace('block/', '')
+        const textureNamePath = textureNameClean + '.png'
         if (!textureNamePath.startsWith('entity/')) continue
-        const texturePath = rawData.latest['textures/'][textureNamePath];
+        const texturePath = rawData.latest['textures/'][textureNamePath]
         if (!texturePath) throw new Error(`Missing texture ${textureNamePath}: ${texture}`)
         texturesAddLast[textureNameClean] = texturePath
     }
@@ -36,7 +40,7 @@ for (const [name, {textures = {}}] of Object.entries(blockstatesModels.models.la
 
 const makeAtlas = (name, textures) => {
     const { image, json } = makeTextureAtlas(Object.keys(textures), (name) => {
-        const texPath = textures[name]!;
+        const texPath = textures[name]!
         const contents = `data:image/png;base64,${fs.readFileSync(join('data', `${texPath}`), 'base64')}`
         return {
             contents,
