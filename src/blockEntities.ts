@@ -29,8 +29,10 @@ for (const version of customModelsVersions) {
             const filePath = path.join(dir, fileName)
             if (fileName.endsWith('.json')) {
                 const json = JSON.parse(fs.readFileSync(filePath, 'utf8'))
-                if (json.parent && !json.parent.startsWith('block/')) json.parent = `block/${json.parent}`
-                fs.writeFileSync(filePath, JSON.stringify(json, null, 4))
+                if (json.parent && !json.parent.startsWith('block/')) {
+                    json.parent = `block/${json.parent}`
+                    fs.writeFileSync(filePath, JSON.stringify(json, null, 4))
+                }
                 customData[type][version] ??= {}
                 const nameClean = fileName.replace('.json', '');
                 if (customData[type][version]![nameClean]) {
@@ -40,10 +42,11 @@ for (const version of customModelsVersions) {
                 existingPaths[type][nameClean] = undefined
                 // TODO drop existing for all versions
                 const refNameRaw = filePath.slice(filePath.indexOf(type) + type.length + 1);
-                const refName = type === 'blockModels'
+                let refName = type === 'blockModels'
                     ? refNameRaw.startsWith('block/') ? refNameRaw : `block/${refNameRaw}` // e.g. block/sign/oak_sign // e.g. block/sign/oak_sign
                     : nameClean // e.g. oak_sign (just block name) // e.g. oak_sign (just block name) // e.g. oak_sign (just block name)
-                existingPaths[type][`${refName}.json`] = `../${filePath}`
+                if (!refName.endsWith('.json')) refName += '.json'
+                existingPaths[type][`${refName}`] = `../${filePath}`
             }
         }
     }

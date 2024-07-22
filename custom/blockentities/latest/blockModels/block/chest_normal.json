@@ -1,5 +1,5 @@
 {
-    "parent": "block/chest/chest",
+    "parent": "block/chest",
     "textures": {
         "chest": "entity/chest/normal"
     }
