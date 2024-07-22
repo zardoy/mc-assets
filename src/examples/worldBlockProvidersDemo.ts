@@ -7,16 +7,16 @@ import blocksAtlas from '../../dist/blocksAtlases.json';
 
 const blocksProvider = worldBlockProvider(blockstatesModels, blocksAtlas, 'latest')
 
-console.log(blocksProvider.getTextureInfo("block/entity/decorated_pot/decorated_pot_base"))
+// console.log(blocksProvider.getTextureInfo("block/entity/decorated_pot/decorated_pot_base"))
 
-const result = blocksProvider.getResolvedModel0_1({
-    name: 'decorated_pot',
+const result = blocksProvider.getAllResolvedModels0_1({
+    name: 'oak_sign',
     properties: {
         facing: 'east'
     },
 })
 
-// console.log(result.elements[0].faces)
+console.log(result)
 
 // const result2 = blocksProvider.getResolvedModel0_1({
 //     name: 'fence',

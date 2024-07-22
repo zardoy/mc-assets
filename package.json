@@ -56,6 +56,8 @@
         "minecraft items",
         "minecraft colors",
         "minecraft parser",
-        "minecraft extracter"
+        "minecraft extracter",
+        "minecraft block model parser",
+        "minecraft block entity"
     ]
 }

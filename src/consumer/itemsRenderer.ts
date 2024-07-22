@@ -36,11 +36,12 @@ export class ItemsRenderer {
 
     tryGetFullBlock(blockName: string, properties: Record<string, string | boolean> = {}) {
         if (!this.blocksAtlasParser) return
-        const resolvedModel = this.assetsParser.getResolvedModel({
+        const resolvedModelParts = this.assetsParser.getResolvedModelFirst({
             name: blockName,
             properties,
         }, true)
-        if (resolvedModel.elements?.length !== 1) return
+        const resolvedModel = resolvedModelParts?.[0]
+        if (resolvedModel?.elements?.length !== 1) return
         const elem = resolvedModel.elements[0]!
         if (elem.from[0] !== 0 || elem.from[1] !== 0 || elem.from[2] !== 0) return
         if (elem.to[0] !== 16 || elem.to[1] !== 16 || elem.to[2] !== 16) return

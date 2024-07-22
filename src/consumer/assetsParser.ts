@@ -26,26 +26,38 @@ export class AssetsParser {
         return final
     }
 
-    // looks like workaround
-    private resolvedModel: Pick<BlockModel, 'textures' | 'ao' | 'x' | 'y' | 'z' | 'elements'> = {}
+    parseProperties(properties: string) {
+        if (typeof properties === 'object') { return properties }
+
+        const json = {} as Record<string, string | boolean>
+        for (const prop of properties.split(',')) {
+            const [key, value] = prop.split('=')
+            json[key!] = value!
+        }
+        return json
+    }
 
     getElements(queriedBlock: Omit<QueriedBlock, 'stateId'>, fallbackVariant = false) {
-        function parseProperties(properties) {
-            if (typeof properties === 'object') { return properties }
-
-            const json = {}
-            for (const prop of properties.split(',')) {
-                const [key, value] = prop.split('=')
-                json[key] = value
-            }
-            return json
+        const model = this.getResolvedModelFirst(queriedBlock, fallbackVariant)
+        if (!model) return 0
+        const allElements = [] as BlockElement[]
+        for (const m of model) {
+            if (!m?.elements) continue
+            allElements.push(...m.elements.map(({ from, to }) => [from, to] as BlockElement))
         }
+        const elementsOptimized = allElements.length === 1 && arrEq(allElements[0]![0], [0, 0, 0]) && arrEq(allElements[0]![1], [16, 16, 16]) ? 1 : allElements
+        return elementsOptimized
+    }
 
-        function matchProperties(block: Pick<QueriedBlock, 'properties'>, /* to match against */properties: string | (Record<string, string | boolean> & { OR })) {
+    // looks like workaround
+    private resolvedModel: Pick<BlockModel, 'textures' | 'ao' | 'elements'> & { x?: number, y?: number, z?: number, uvlock?: boolean, weight?: number } = {}
+
+    private getModelsByBlock(queriedBlock: Omit<QueriedBlock, 'stateId'>, fallbackVariant: boolean, multiOptim: boolean) {
+        const matchProperties = (block: Pick<QueriedBlock, 'properties'>, /* to match against */properties: string | (Record<string, string | boolean> & { OR?})) => {
             if (!properties) { return true }
 
             if (typeof properties === 'string') {
-                properties = parseProperties(properties) as Record<string, string | boolean> & { OR }
+                properties = this.parseProperties(properties)
             }
             const blockProps = block.properties
             if (properties.OR) {
@@ -60,9 +72,9 @@ export class AssetsParser {
             return true
         }
 
-        let modelApply: BlockApplyModel | undefined
-        const blockStates = this.blockStatesStore.get(this.version, queriedBlock.name);
-        if (!blockStates) return 0
+        let applyModels = [] as BlockApplyModel[]
+        const blockStates = this.blockStatesStore.get(this.version, queriedBlock.name)
+        if (!blockStates) return
         const states = blockStates.variants
         if (states) {
             let state = states[''] || states['normal']
@@ -77,56 +89,65 @@ export class AssetsParser {
                 if (fallbackVariant) {
                     state = states[Object.keys(states)[0]!]
                 } else {
-                    return 0
+                    return
                 }
             }
-            modelApply = state
+            if (state) {
+                applyModels.push(state)
+            }
         }
         if (blockStates.multipart) {
-            // TODO! multiple variants
-            const multipartWithWhen = blockStates.multipart.filter(x => x.when);
-            const multipartWithoutWhen = blockStates.multipart.filter(x => !x.when);
-            for (const { when, apply } of multipartWithWhen) {
-                if (matchProperties(queriedBlock, when as any)) {
-                    modelApply = apply
+            for (const { when, apply } of blockStates.multipart) {
+                if (!when || matchProperties(queriedBlock, when as any)) {
+                    applyModels.push(apply)
                 }
             }
-            if (!modelApply) {
-                modelApply = multipartWithoutWhen[0]?.apply
-            }
-            if (!modelApply && fallbackVariant) {
-                modelApply = multipartWithWhen[0]?.apply
+            if (!applyModels.length && fallbackVariant) {
+                const multipartWithWhen = blockStates.multipart.filter(x => x.when);
+                const apply = multipartWithWhen[0]?.apply
+                if (apply) {
+                    applyModels.push(apply)
+                }
             }
         }
-        if (!modelApply) return 0
-        // TODO losing x, y, uvlock, and not 0!
-        const model = (Array.isArray(modelApply) ? modelApply[0/* Math.floor(Math.random() * modelApply.length) */]! : modelApply).model
-        return this.getResolvedModelByModelName(model, queriedBlock.name)?.elementsOptimized ?? 0
+        if (!applyModels.length) return
+        const modelsResolved = [] as typeof this.resolvedModel[][]
+        let part = 0
+        for (const model of applyModels) {
+            part++
+            let variant = 0
+            modelsResolved.push([])
+            for (const varModel of Array.isArray(model) ? model : [model]) {
+                variant++
+                this.resolvedModel = {
+                    x: varModel.x,
+                    y: varModel.y,
+                    z: varModel.z,
+                    uvlock: varModel.uvlock,
+                    weight: varModel.weight,
+                }
+                if (!varModel) continue
+                this.getResolvedModelsByModel(varModel.model, queriedBlock.name + '-' + part + '-' + variant, false)
+                // if (!result || Object.keys(result).length === 0) continue // todo: maybe we should push null?
+                modelsResolved[modelsResolved.length - 1]!.push(this.resolvedModel)
+                if (!multiOptim && modelsResolved[modelsResolved.length - 1]!.length > 0) break
+            }
+        }
+        return modelsResolved // todo figure out the type error
     }
 
-    getResolvedModelByModelName(model: string, debugQueryName?: string, clearModel = true) {
+    private getResolvedModelsByModel(model: string, debugQueryName?: string, clearModel = true) {
         if (clearModel) {
             this.resolvedModel = {}
         }
         const modelData = this.blockModelsStore.get(this.version, model)
         if (!modelData) return
-        // let textures = {} as Record<string, string>
-        let elements = [] as BlockElement[]
         const resolveModel = (model: BlockModel) => {
             if (model.ambientocclusion !== undefined) {
                 this.resolvedModel.ao = model.ambientocclusion
             }
             if (model.ao !== undefined) {
                 this.resolvedModel.ao = model.ao
-            }
-            if (model.x !== undefined) {
-                this.resolvedModel.x = model.x
-            }
-            if (model.y !== undefined) {
-                this.resolvedModel.y = model.y
-            }
-            if (model.z !== undefined) {
-                this.resolvedModel.z = model.z
             }
 
             if (model.textures) {
@@ -135,8 +156,6 @@ export class AssetsParser {
             }
 
             if (model.elements) {
-                elements.push(...model.elements.map(({ from, to }) => [from, to] as BlockElement))
-
                 this.resolvedModel.elements ??= []
                 this.resolvedModel.elements.push(...structuredClone(model.elements))
             }
@@ -177,22 +196,21 @@ export class AssetsParser {
                 face.texture = this.resolvedModel.textures![face.texture.replace('#', '')] ?? face.texture
             }
         }
-        // todo cleanup methods
         return {
-            elementsOptimized: elements.length === 1 && arrEq(elements[0]![0], [0, 0, 0]) && arrEq(elements[0]![1], [16, 16, 16]) ? 1 : elements,
             resolvedModel: this.resolvedModel,
         }
     }
 
-    getResolvedModel(queriedBlock: Omit<QueriedBlock, 'stateId'>, fallbackVariant = false) {
-        this.resolvedModel = {}
-        const elements = this.getElements(queriedBlock, fallbackVariant)
-        return {
-            ...this.resolvedModel,
-            // elements: elements === 0 ? [] : elements === 1 ? [
-            //     [[0, 0, 0], [16, 16, 16]]
-            // ] : elements,
-        }
+    getResolvedModelFirst(queriedBlock: Omit<QueriedBlock, 'stateId'>, fallbackVariant = false) {
+        return this.getModelsByBlock(queriedBlock, fallbackVariant, false)?.map(x => x[0]!)
+    }
+
+    getResolvedModelRandom(queriedBlock: Omit<QueriedBlock, 'stateId'>, fallbackVariant = false) {
+        return this.getModelsByBlock(queriedBlock, fallbackVariant, false)?.map(x => x[Math.floor(Math.random() * x.length)]!)
+    }
+
+    getAllResolvedModels(queriedBlock: Omit<QueriedBlock, 'stateId'>, fallbackVariant = false) {
+        return this.getModelsByBlock(queriedBlock, fallbackVariant, true)
     }
 }
 

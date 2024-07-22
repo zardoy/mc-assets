@@ -9,11 +9,11 @@ const assetsParser = new AssetsParser('latest', getLoadedBlockstatesStore(blocks
 
 const modelsStore = getLoadedModelsStore(blockstatesModels)
 
-console.dir(assetsParser.getResolvedModel({
-    name: 'oak_sign',
+console.dir(assetsParser.getAllResolvedModels({
+    name: 'stone',
     properties: {},
 }, true), {
-    depth: 4,
+    depth: 6,
 })
 
 // console.log(modelsStore.get('latest', 'block/stone_mirrored'))

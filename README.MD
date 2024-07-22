@@ -19,7 +19,7 @@ npm i mc-assets
 - **Easy to Use Items Textures** - Includes hand-crafted isometric textures for some blocks.
 - **Block Entities Models** - Includes community-crafted models for block entities.
 
-This module was originally designed as standalone package for [https://mcraft.fun](mcraft.fun) (repo) project so it is easier to maintain, but now it became a library that I think can cover any use case where you need to work with minecraft assets. This library means block states, models data and texture contents, it doesn't cover minecraft-data use cases.
+This module was originally designed as standalone package for [https://mcraft.fun](mcraft.fun) (repo) project so it is easier to maintain, but now it became a library that I think can cover any use case where you need to work with minecraft assets. This library means block states, models data and texture contents, it doesn't cover minecraft-data use cases. With the best block model parser you can build your own renderers, editors, etc.
 
 > Bundled modules & block states are version-accurate starting from 1.13.0 (post-flattening) version.
 > Tested on Node.js 18 and above.
@@ -27,6 +27,8 @@ This module was originally designed as standalone package for [https://mcraft.fu
 <!-- GENERATED -->
 
 [Atlas explorer (web demo)](https://zardoy.github.io/mc-assets/).
+
+[External Models Playground](https://mcraft.fun/playground.html)
 
 ## Usage
 
@@ -56,37 +58,49 @@ const model = modelsStore.get('latest', 'block/stone_mirrored')
 // note: you can always specify a specific version instead of 'latest'
 const assetsParser = new AssetsParser('latest', blockstatesStore, modelsStore)
 
-const resolvedModel = assetsParser.getResolvedModel({
+const resolvedModel = assetsParser.getAllResolvedModels({
     name: 'stone', // block name not model name
     properties: {},
 }, false) // false (default) means return empty if variant matching properties is not found
-// {
-//   textures: {
-//     all: 'block/stone',
-//     particle: 'block/stone',
-//     down: 'block/stone',
-//     up: 'block/stone',
-//     north: 'block/stone',
-//     east: 'block/stone',
-//     south: 'block/stone',
-//     west: 'block/stone'
-//   },
-//   elements: [
+// [
+//   [
 //     {
-//       from: [ 0, 0, 0 ],
-//       to: [ 16, 16, 16 ],
-//       faces: {
-//         down: { texture: 'block/stone', cullface: 'down' },
-//         up: { texture: 'block/stone', cullface: 'up' },
-//         north: { texture: 'block/stone', cullface: 'north' },
-//         south: { texture: 'block/stone', cullface: 'south' },
-//         west: { texture: 'block/stone', cullface: 'west' },
-//         east: { texture: 'block/stone', cullface: 'east' }
-//       }
+//       x: undefined,
+//       y: undefined,
+//       z: undefined,
+//       uvlock: undefined,
+//       weight: undefined,
+//       textures: {
+//         all: 'block/stone',
+//         particle: 'block/stone',
+//         down: 'block/stone',
+//         up: 'block/stone',
+//         north: 'block/stone',
+//         east: 'block/stone',
+//         south: 'block/stone',
+//         west: 'block/stone'
+//       },
+//       elements: [
+//         {
+//           from: [ 0, 0, 0 ],
+//           to: [ 16, 16, 16 ],
+//           faces: {
+//             down: { texture: 'block/stone', cullface: 'down' },
+//             up: { texture: 'block/stone', cullface: 'up' },
+//             north: { texture: 'block/stone', cullface: 'north' },
+//             south: { texture: 'block/stone', cullface: 'south' },
+//             west: { texture: 'block/stone', cullface: 'west' },
+//             east: { texture: 'block/stone', cullface: 'east' }
+//           }
+//         }
+//       ]
 //     }
-//   ]
-// }
+//   ],
+//   [ ... ] // second variant and so on
+// ]
 ```
+
+`getAllResolvedModels` returns an array of arrays, where first depth level is model parts, second depth level is variants (for example Minecraft chooses them randomly). You can use `getResolvedModelFirst` to get first variant only. Or `getResolvedModelRandom` to get a random variant.
 
 ### Rendering Atlas Textures
 

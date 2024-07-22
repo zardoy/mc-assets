@@ -1,8 +1,11 @@
 type ModelBasic = {
     model: string
     x?: number
+    z?: number
     y?: number
     uvlock?: boolean
+    /** only for array models */
+    weight?: number
 }
 
 export type BlockApplyModel = ModelBasic | (ModelBasic & { weight })[]
@@ -58,9 +61,6 @@ export type BlockModel = {
         }
     }[]
     ambientocclusion?: boolean
-    x?: number
-    y?: number
-    z?: number
     ao?: boolean
 }
 

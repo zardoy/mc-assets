@@ -38,11 +38,12 @@ for (const version of customModelsVersions) {
                 }
                 customData[type][version]![nameClean] = true
                 existingPaths[type][nameClean] = undefined
+                // TODO drop existing for all versions
                 const refNameRaw = filePath.slice(filePath.indexOf(type) + type.length + 1);
                 const refName = type === 'blockModels'
                     ? refNameRaw.startsWith('block/') ? refNameRaw : `block/${refNameRaw}` // e.g. block/sign/oak_sign // e.g. block/sign/oak_sign
                     : nameClean // e.g. oak_sign (just block name) // e.g. oak_sign (just block name) // e.g. oak_sign (just block name)
-                existingPaths[type][refName] = `../${filePath}`
+                existingPaths[type][`${refName}.json`] = `../${filePath}`
             }
         }
     }
