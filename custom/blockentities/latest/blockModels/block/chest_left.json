@@ -1,7 +1,7 @@
 {
     "parent": "block/block",
     "textures": {
-        "particle": "#particles"
+        "particle": "#particle"
     },
     "elements": [
         {

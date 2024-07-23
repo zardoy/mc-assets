@@ -1,7 +1,0 @@
-{
-    "credit": "Made with Blockbench by TyBraniff for Bluemaps support.",
-    "parent": "block/entity/wall_hanging_sign",
-    "textures": {
-        "wood": "entity/signs/hanging/warped"
-    }
-}

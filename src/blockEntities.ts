@@ -5,7 +5,7 @@ const dataPaths = JSON.parse(fs.readFileSync('./data/data-paths.json', 'utf8'))
 
 // iterate over all versions
 const customModelsPath = path.join('./custom/blockentities')
-const customModelsVersions = fs.readdirSync(customModelsPath)
+const customModelsVersions = fs.readdirSync(customModelsPath).filter(x => !x.startsWith('.'))
 
 const customData = {
     blockStates: {},
@@ -15,6 +15,20 @@ const customData = {
 const existingPaths = {
     blockStates: dataPaths.latest['blockstates/'],
     blockModels: dataPaths.latest['models/'],
+}
+
+for (const key in existingPaths.blockStates) {
+    const value = existingPaths.blockStates[key]
+    if (value.includes('./custom/blockentities/')) {
+        delete existingPaths.blockStates[key]
+    }
+}
+
+for (const key in existingPaths.blockModels) {
+    const value = existingPaths.blockModels[key]
+    if (value.includes('./custom/blockentities/')) {
+        delete existingPaths.blockModels[key]
+    }
 }
 
 for (const version of customModelsVersions) {
