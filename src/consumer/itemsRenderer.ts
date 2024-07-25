@@ -19,7 +19,7 @@ export class ItemsRenderer {
     resolveTexture(texture: string) {
         const atlasParser = texture.startsWith('block/') ? this.blocksAtlasParser! : this.itemsAtlasParser
         const type = texture.startsWith('block/') ? 'blocks' : 'items'
-        const textureInfo = atlasParser.getTextureInfo(texture.replace('block/', '').replace('item/', ''), this.version)!
+        const textureInfo = atlasParser.getTextureInfo(texture.replace('block/', '').replace('blocks/', '').replace('item/', ''), this.version)!
         const atlas = atlasParser.atlas[textureInfo.imageType]!
         return {
             slice: [

@@ -66,7 +66,7 @@ export default function worldBlockProvider(blockstatesModels: any, blocksAtlas: 
             })
         },
         getTextureInfo(textureName: string) {
-            return atlasParser.getTextureInfo(textureName.replace('block/', ''), version)
+            return atlasParser.getTextureInfo(textureName.replace('block/', '').replace('blocks/', ''), version)
         }
     }
 }
