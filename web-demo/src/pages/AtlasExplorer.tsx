@@ -15,15 +15,17 @@ import { AtlasParser } from '../../../src/consumer/atlasParser'
 globalThis.blockStatesModels = blockStatesModels
 
 export default function AtlasExplorer() {
+    const qs = new URLSearchParams(window.location.search)
     const canvasRef = useRef<HTMLCanvasElement>(null!)
-    const [selectedAtlas, setSelectedAtlas] = useState<'items' | 'items-legacy' | 'blocks' | 'blocks-legacy' | 'particles' | 'particles-legacy' | 'items-all-render' | 'blocks-all-render'>('items')
+    const [selectedAtlas, setSelectedAtlas] = useState<'items' | 'items-legacy' | 'blocks' | 'blocks-legacy' | 'particles' | 'particles-legacy' | 'items-all-render' | 'blocks-all-render'>(qs.get('type') as any ?? 'items')
 
-    const [legacyVariantVersion, setLegacyVariantVersion] = useState<string | undefined>()
+    const [legacyVariantVersion, setLegacyVariantVersion] = useState<string | undefined>(undefined)
     const [customImage, setCustomImage] = useState<string | undefined>()
     const [customAtlas, setCustomAtlas] = useState<any>()
     useEffect(() => {
         setCustomAtlas(undefined)
         setCustomImage(undefined)
+        // setLegacyVariantVersion(qs.get('legacyVariantVersion') ?? undefined)
         setLegacyVariantVersion(undefined)
     }, [selectedAtlas])
 
@@ -146,6 +148,10 @@ export default function AtlasExplorer() {
                 ctx.fillStyle = 'red'
                 ctx.strokeRect(u * img.width, v * img.height, su * img.width, sv * img.height)
             }
+
+            qs.set('type', selectedAtlas)
+            if (legacyVariantVersion) qs.set('legacyVariantVersion', legacyVariantVersion)
+            window.history.replaceState({}, '', `${window.location.pathname}?${qs.toString()}`)
         }
     }, [selectedAtlas, customImage, highlightTexture])
 
@@ -197,7 +203,12 @@ export default function AtlasExplorer() {
             <select className='w-min border border-gray-700 rounded-lg' value={String(legacyVariantVersion)} onChange={(e) => {
                 setLegacyVariantVersion(e.target.value)
                 console.time('makeNewAtlas')
-                currentAtlasParser.makeNewAtlas(e.target.value, undefined).then(({ atlas, canvas }) => {
+                currentAtlasParser.makeNewAtlas(e.target.value, (path) => {
+                    // if (path === testBlockOverridePath) {
+                    //     return testBlockOverride
+                    // }
+                    return
+                }).then(({ atlas, canvas }) => {
                     console.timeEnd('makeNewAtlas')
                     setCustomAtlas(atlas)
                     setCustomImage(canvas.toDataURL())

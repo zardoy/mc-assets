@@ -120,17 +120,18 @@ export class AtlasParser {
             getLoadedImage: (name) => {
                 const texture = newTextures[name]!
                 const image = texture.img
-                const imgSize = image.width
+                const imgWidth = image.width
+                const imgHeight = image.height
                 //@ts-ignore we no longer need the image, remove from atlas
                 delete texture.img
                 return {
                     image,
-                    renderWidth: texture.su * imgSize,
-                    renderHeight: texture.sv * imgSize,
-                    renderSourceStartX: texture.u * imgSize,
-                    renderSourceStartY: texture.v * imgSize,
-                    renderSourceWidth: texture.su * imgSize,
-                    renderSourceHeight: texture.sv * imgSize,
+                    renderWidth: texture.su * imgWidth,
+                    renderHeight: texture.sv * imgHeight,
+                    renderSourceStartX: texture.u * imgWidth,
+                    renderSourceStartY: texture.v * imgHeight,
+                    renderSourceWidth: texture.su * imgWidth,
+                    renderSourceHeight: texture.sv * imgHeight,
                 }
             },
             tileSize: this.atlas.latest.tileSize,
