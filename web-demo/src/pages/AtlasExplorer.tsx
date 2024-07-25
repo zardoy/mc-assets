@@ -165,8 +165,8 @@ export default function AtlasExplorer() {
         if (!currentAtlas) return
         const atlasTextures = currentAtlas.textures
         for (const [name, texture] of Object.entries(atlasTextures)) {
-            const { u, v } = texture
-            if (currentU >= u && currentU <= u + currentAtlas.suSv && currentV >= v && currentV <= v + currentAtlas.suSv) {
+            const { u, v, su, sv } = texture
+            if (currentU >= u && currentU <= u + (su ?? currentAtlas.suSv) && currentV >= v && currentV <= v + (sv ?? currentAtlas.suSv)) {
                 setCursorName(name)
                 return
             }
