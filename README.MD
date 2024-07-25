@@ -21,6 +21,8 @@ npm i mc-assets
 
 This module was originally designed as standalone package for [https://mcraft.fun](mcraft.fun) (repo) project so it is easier to maintain, but now it became a library that I think can cover any use case where you need to work with minecraft assets. This library means block states, models data and texture contents, it doesn't cover minecraft-data use cases. With the best block model parser you can build your own renderers, editors, etc.
 
+For contributing & building instructions see [building](#building) section.
+
 > Bundled modules & block states are version-accurate starting from 1.13.0 (post-flattening) version.
 > Tested on Node.js 18 and above.
 
@@ -161,3 +163,17 @@ const ButtonHighlighted = styled(Button)`
 ```
 
 Please, don't use json / image files directly as their format is not stable and can change in the future, use the parsers instead.
+
+## Building
+
+```bash
+pnpm i
+# recommended but not required (will speed up build by fetching cache from gh-pages branch)
+pnpm use-cached-datapaths
+pnpm build
+```
+
+Then if you only changing block entities, you can run `pnpm regen-blockentities` to regenerate block entities.
+If you only change consumer code you can run `pnpm watch-dist` to watch for changes and rebuild.
+
+To use in `minecraft-web-client` or your own project just run `pnpm link mc-assets` once or use `file:../mc-assets` in your `package.json` file if you are using other package manager.
