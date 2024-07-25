@@ -1,5 +1,5 @@
 {
-    "parent": "block/minecraft:block/template_item_frame",
+    "parent": "block/template_item_frame",
     "textures": {
         "particle": "block/birch_planks",
         "wood": "block/birch_planks",
