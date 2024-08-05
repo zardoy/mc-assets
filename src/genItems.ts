@@ -39,8 +39,8 @@ const usedInvsprite = [] as string[]
 
 export const generateItemsAtlases = async () => {
   const parentReferences = {} as Record<string, string[]>
-  const allModels = blockstatesModels.models;
-  const latestModels = allModels.latest;
+  const allModels = blockstatesModels.models
+  const latestModels = allModels.latest
   for (const [modelName, model] of Object.entries(latestModels)) {
     if (!modelName.startsWith('item/')) continue
     if (!model.parent) continue
@@ -79,9 +79,9 @@ export const generateItemsAtlases = async () => {
   const textureFromInvsprite = (name: string) => {
     const { x, y } = legacyInvsprite[name]
 
-    const sliceCanvas = createCanvas(16, 16);
-    const sliceCtx = sliceCanvas.getContext('2d');
-    sliceCtx.drawImage(invspriteImage, x, y, 32, 32, 0, 0, 16, 16);
+    const sliceCanvas = createCanvas(16, 16)
+    const sliceCtx = sliceCanvas.getContext('2d')
+    sliceCtx.drawImage(invspriteImage, x, y, 32, 32, 0, 0, 16, 16)
     return sliceCanvas.toDataURL()
   }
 
@@ -92,26 +92,29 @@ export const generateItemsAtlases = async () => {
   const isGeneratedModelName = (name: string) => {
     return name === 'item/generated' || name === 'builtin/generated' || name === 'builtin/entity'
   }
+  const removeLegacyModels = (modelName: string) => {
+    for (const [ver, data] of Object.entries(allModels)) {
+      if (ver === 'latest') continue
+      delete data[modelName]
+    }
+  }
   const validateItemModel = (model: ItemModel, name: string, allModels) => {
     if (validated.has(name)) return
     validated.add(name)
     if (model.parent) {
-      if (model.parent.startsWith('block/') || (isGeneratedModelName(model.parent) && modelHasNoTextures(model))) {
-        const invspriteName = name.replace('item/', '')
-        if (!isCube(invspriteName)) {
-          if (legacyInvsprite[invspriteName]) {
-            usedInvsprite.push(invspriteName)
-            const textureKey = `invsprite_${invspriteName}`
-            addTextures[textureKey] = textureFromInvsprite(invspriteName)
-            allModels[name] = {
-              textures: {
-                layer0: textureKey
-              }
-            }
-          } else {
-            console.warn('parent block model', invspriteName, 'of', name, 'is not a cube and no invsprite found')
+      const invspriteName = name.replace('item/', '')
+      if (legacyInvsprite[invspriteName]) {
+        usedInvsprite.push(invspriteName)
+        const textureKey = `invsprite_${invspriteName}`
+        addTextures[textureKey] = textureFromInvsprite(invspriteName)
+        allModels[name] = {
+          textures: {
+            layer0: textureKey
           }
         }
+        removeLegacyModels(name)
+      } else if ((model.parent.startsWith('block/') || (isGeneratedModelName(model.parent) && modelHasNoTextures(model))) && !isCube(invspriteName)) {
+        console.warn('parent block model', invspriteName, 'of', name, 'is not a cube and no invsprite found')
       } else if (!isGeneratedModelName(model.parent)) {
         if (!latestModels[model.parent]) {
           throw new Error(`parent item model ${model.parent} not found`)
@@ -137,7 +140,7 @@ export const generateItemsAtlases = async () => {
 
   const createItemsAtlas = (key: string, textures: Record<string, string>) => {
     const { json, image } = makeTextureAtlas(Object.keys(textures), (name) => {
-      let texPath = textures[name]!;
+      let texPath = textures[name]!
       // if starts with data url
       if (texPath.startsWith('data:image/png;base64,')) {
         return {

@@ -28,9 +28,9 @@ export class ItemsRenderer {
                 textureInfo.su * atlas.width,
                 textureInfo.sv * atlas.height
             ] satisfies TextureSlice,
+            type,
             /** @deprecated */
-            path: type,
-            type: type
+            path: type
         }
     }
 
@@ -48,6 +48,7 @@ export class ItemsRenderer {
         const topTexture = elem.faces.up?.texture ?? elem.faces.top?.texture!
         const leftTexture = elem.faces.east?.texture ?? elem.faces.left?.texture ?? elem.faces.side?.texture!
         const rightTexture = elem.faces.north?.texture ?? elem.faces.right?.texture ?? elem.faces.side?.texture!
+        if (!topTexture || !leftTexture || !rightTexture) return
         return {
             top: this.resolveTexture(topTexture),
             left: this.resolveTexture(leftTexture),

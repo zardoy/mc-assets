@@ -53,7 +53,7 @@ export class AssetsParser {
     private resolvedModel: Pick<BlockModel, 'textures' | 'ao' | 'elements'> & { x?: number, y?: number, z?: number, uvlock?: boolean, weight?: number } = {}
 
     private getModelsByBlock(queriedBlock: Omit<QueriedBlock, 'stateId'>, fallbackVariant: boolean, multiOptim: boolean) {
-        const matchProperties = (block: Pick<QueriedBlock, 'properties'>, /* to match against */properties: string | (Record<string, string | boolean> & { OR?})) => {
+        const matchProperties = (block: Pick<QueriedBlock, 'properties'>, /* to match against */properties: string | (Record<string, string | boolean> & { OR?, AND?})) => {
             if (!properties) { return true }
 
             if (typeof properties === 'string') {
@@ -62,6 +62,9 @@ export class AssetsParser {
             const blockProps = block.properties
             if (properties.OR) {
                 return properties.OR.some((or) => matchProperties(block, or))
+            }
+            if (properties.AND) {
+                return properties.AND.every((and) => matchProperties(block, and))
             }
             for (const prop in properties) {
                 if (typeof properties[prop] !== 'string') properties[prop] = String(properties[prop])
@@ -103,7 +106,7 @@ export class AssetsParser {
                 }
             }
             if (!applyModels.length && fallbackVariant) {
-                const multipartWithWhen = blockStates.multipart.filter(x => x.when);
+                const multipartWithWhen = blockStates.multipart.filter(x => x.when)
                 const apply = multipartWithWhen[0]?.apply
                 if (apply) {
                     applyModels.push(apply)
@@ -152,7 +155,13 @@ export class AssetsParser {
 
             if (model.textures) {
                 this.resolvedModel.textures ??= {}
-                Object.assign(this.resolvedModel.textures, model.textures)
+                for (let [key, value] of Object.entries(model.textures)) {
+                    value = value.replace('blocks/', 'block/').replace('block/', '')
+                    if (value.startsWith('#') && this.resolvedModel.textures[value.slice(1)]) {
+                        value = this.resolvedModel.textures[value.slice(1)]!
+                    }
+                    this.resolvedModel.textures[key] = value
+                }
             }
 
             if (model.elements) {

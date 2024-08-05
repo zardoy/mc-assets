@@ -27,6 +27,7 @@ export type BlockStates = {
             [name: string]: string | number
         } & {
             OR?: BlockStateConditions[]
+            AND?: BlockStateConditions[]
         }
         apply: BlockApplyModel
     }[]

@@ -16,14 +16,28 @@ blockstatesModels.blockstates.latest['unknown'] = {
         }
     }
 }
+blockstatesModels.blockstates.latest['errored'] = {
+    variants: {
+        "": {
+            model: "block/errored"
+        }
+    }
+}
 const texturesAddFirst = {
-    'unknown': '../custom/missing_texture.png'
+    'unknown': '../custom/missing_texture.png',
+    'errored': '../custom/errored_texture.png'
 }
 const texturesAddLast = {}
 blockstatesModels.models.latest['block/unknown'] = {
     "parent": "block/cube_all",
     "textures": {
         "all": "block/unknown"
+    }
+}
+blockstatesModels.models.latest['block/errored'] = {
+    "parent": "block/cube_all",
+    "textures": {
+        "all": "block/errored"
     }
 }
 
