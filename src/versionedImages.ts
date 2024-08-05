@@ -1,6 +1,6 @@
 import fs from 'fs'
 import looksSame from 'looks-same'
-import { join } from 'path'
+import { join } from 'path/posix'
 
 export const makeVersionedImages = async (rootDir: string, versions: string[], filterFiles = (file: string) => file.endsWith('.png')) => {
     let saving = 0

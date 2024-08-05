@@ -67,9 +67,12 @@ export class ItemsRenderer {
             }
         }
         if (!model) return
-        const layer0 = model.textures?.layer0
-        if (!layer0) return
-        return this.resolveTexture(layer0)
+        const texture = itemName.startsWith('block/') ?
+            // first defined block texture
+            Object.values(model.textures ?? {})[0] :
+            model.textures?.layer0 // classic item texture
+        if (!texture) return
+        return this.resolveTexture(texture)
         // const {resolvedModel} = this.assetsParser.getResolvedModelByModelName('item/' + itemName, itemName) ?? {}
         // resolvedModel?.textures['layer0']
     }

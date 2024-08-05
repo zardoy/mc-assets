@@ -1,5 +1,4 @@
 import fs from 'fs'
-import path from 'path'
 import { Canvas, Image } from 'canvas'
 import { AtlasCreatorOptions, JsonAtlas, makeTextureAtlas as makeAtlas } from './consumer/atlasCreator'
 

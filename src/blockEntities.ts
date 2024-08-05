@@ -1,5 +1,5 @@
 import fs from 'fs'
-import path from 'path'
+import path from 'path/posix'
 
 const dataPaths = JSON.parse(fs.readFileSync('./data/data-paths.json', 'utf8'))
 

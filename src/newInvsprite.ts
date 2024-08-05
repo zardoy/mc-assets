@@ -1,5 +1,5 @@
 import fs from 'fs'
-import path from 'path'
+import path from 'path/posix'
 import { createCanvas, Image } from 'canvas'
 import { makeTextureAtlas } from './atlasNode'
 

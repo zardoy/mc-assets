@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { join } from 'path'
+import { join } from 'path/posix'
 import { filesize } from 'filesize'
 
 // todo remove

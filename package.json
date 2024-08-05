@@ -10,7 +10,7 @@
         "regen-blockentities": "rm -f dist/blockStatesModels.json && tsx src/blockEntities.ts && tsx src/newAssetsBuilder.ts && tsx src/genBlocks.ts",
         "build-consumer": "tsc -p tsconfig.consumer.json",
         "watch-dist": "tsc -p tsconfig.consumer.json -w",
-        "build-web": "cd web-demo/ && pnpm build"
+        "build-web": "pnpm --dir web-demo build"
     },
     "files": [
         "dist",

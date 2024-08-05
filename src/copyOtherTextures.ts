@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { join, dirname } from 'path'
+import { join, dirname } from 'path/posix'
 
 const handledTextureKeys = [
     'blocks/',

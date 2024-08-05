@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { join } from 'path'
+import { join } from 'path/posix'
 import { BlockModel, BlockStates, ItemModel } from '../consumer/types'
 import { VersionedStore } from '../consumer/versionedStore'
 import { AtlasParser } from '../consumer'
@@ -15,5 +15,5 @@ const blockstatesModels = JSON.parse(fs.readFileSync('./dist/blockStatesModels.j
 const itemsAtlasParser = new AtlasParser(itemsAtlases, '')
 const blocksAtlasParser = new AtlasParser(blocksAtlases, '')
 
-console.log(blocksAtlasParser.getTextureInfo("entity/decorated_pot/decorated_pot_base"))
-// console.log(new ItemsRenderer('latest', blockstatesModels, itemsAtlasParser, blocksAtlasParser).getItemTexture('oak_sapling'))
+// console.log(blocksAtlasParser.getTextureInfo("entity/decorated_pot/decorated_pot_base"))
+console.log(new ItemsRenderer('latest', blockstatesModels, itemsAtlasParser, blocksAtlasParser).getItemTexture('block/errored'))

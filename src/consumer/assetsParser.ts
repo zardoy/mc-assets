@@ -156,9 +156,11 @@ export class AssetsParser {
             if (model.textures) {
                 this.resolvedModel.textures ??= {}
                 for (let [key, value] of Object.entries(model.textures)) {
-                    value = value.replace('blocks/', 'block/').replace('block/', '')
-                    if (value.startsWith('#') && this.resolvedModel.textures[value.slice(1)]) {
-                        value = this.resolvedModel.textures[value.slice(1)]!
+                    if (value.includes('#')) {
+                        const key = value.split('/').at(-1)!.slice(1)
+                        if (this.resolvedModel.textures[key]) {
+                            value = this.resolvedModel.textures[key]!
+                        }
                     }
                     this.resolvedModel.textures[key] = value
                 }

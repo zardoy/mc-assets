@@ -1,6 +1,6 @@
 import fs from 'fs'
 import { makeTextureAtlas } from './atlasNode'
-import { join } from 'path'
+import { join } from 'path/posix'
 
 const rawData = JSON.parse(fs.readFileSync('./data/data-paths.json', 'utf8'))
 

@@ -1,7 +1,7 @@
 import fs from 'fs'
 import { VersionedStore } from './consumer/versionedStore'
 import { versionToNumber } from './consumer/utils'
-import path from 'path'
+import path from 'path/posix'
 import { BlockModel, BlockStates, ItemModel } from './consumer/types'
 
 
