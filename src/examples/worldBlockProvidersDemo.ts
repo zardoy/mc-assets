@@ -10,9 +10,15 @@ const blocksProvider = worldBlockProvider(blockstatesModels, blocksAtlas, 'lates
 // console.log(blocksProvider.getTextureInfo("block/entity/decorated_pot/decorated_pot_base"))
 
 const result = blocksProvider.getAllResolvedModels0_1({
-    name: 'oak_sign',
+    name: 'chiseled_bookshelf',
     properties: {
-        facing: 'east'
+        "slot_5_occupied": false,
+        "slot_4_occupied": false,
+        "slot_3_occupied": false,
+        "slot_2_occupied": false,
+        "slot_1_occupied": false,
+        "slot_0_occupied": false,
+        "facing": "south"
     },
 })
 

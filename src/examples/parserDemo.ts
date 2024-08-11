@@ -10,7 +10,7 @@ const assetsParser = new AssetsParser('latest', getLoadedBlockstatesStore(blocks
 const modelsStore = getLoadedModelsStore(blockstatesModels)
 
 console.dir(assetsParser.getAllResolvedModels({
-    name: 'stone',
+    name: 'piston',
     properties: {},
 }, true), {
     depth: 6,

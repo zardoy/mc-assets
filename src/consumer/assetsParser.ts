@@ -145,7 +145,19 @@ export class AssetsParser {
         }
         const modelData = this.blockModelsStore.get(this.version, model)
         if (!modelData) return
-        const resolveModel = (model: BlockModel) => {
+        const collectedParentModels = [] as BlockModel[]
+        const collectModels = (model: BlockModel) => {
+            collectedParentModels.push(model)
+
+            if (model.parent) {
+                const parent = this.blockModelsStore.get(this.version, model.parent)
+                if (!parent) return
+                collectModels(parent)
+            }
+        }
+        collectModels(modelData)
+        collectedParentModels.reverse() // from parent to child
+        for (const model of collectedParentModels) {
             if (model.ambientocclusion !== undefined) {
                 this.resolvedModel.ao = model.ambientocclusion
             }
@@ -156,8 +168,9 @@ export class AssetsParser {
             if (model.textures) {
                 this.resolvedModel.textures ??= {}
                 for (let [key, value] of Object.entries(model.textures)) {
-                    if (value.includes('#')) {
-                        const key = value.split('/').at(-1)!.slice(1)
+                    if (value.includes('#')) value = value.split('/').at(-1)!
+                    if (value.startsWith('#')) {
+                        const key = value.slice(1)
                         if (this.resolvedModel.textures[key]) {
                             value = this.resolvedModel.textures[key]!
                         }
@@ -167,36 +180,34 @@ export class AssetsParser {
             }
 
             if (model.elements) {
-                this.resolvedModel.elements ??= []
-                this.resolvedModel.elements.push(...structuredClone(model.elements))
+                this.resolvedModel.elements = structuredClone(model.elements)
             }
-
-            if (model.parent) {
-                const parent = this.blockModelsStore.get(this.version, model.parent)
-                if (!parent) return
-                resolveModel(parent)
-            }
-            return model
         }
-        resolveModel(modelData)
-        const resolveTexture = (originalTexturePath: string, _originalKey: string) => {
+
+        const resolveTexture = (originalTexturePath: string, _originalKey: string, chain: string[]) => {
+            chain.push(_originalKey)
             if (originalTexturePath.includes('#')) {
                 originalTexturePath = originalTexturePath.split('/').at(-1)!.replace('#', '')
                 this.resolvedModel.textures ??= {}
+                if (chain.includes(originalTexturePath)) {
+                    console.warn(`${debugQueryName}: Circular texture reference detected: ${chain.join(' -> ')}`)
+                    return
+                }
                 const existingKey = this.resolvedModel.textures[originalTexturePath]
                 if (!existingKey) {
                     // todo this also needs to be done at the validation stage
                     // throw new Error(`Cannot resolve texture ${key} to ${value} because it is not defined`)
                     console.warn(`${debugQueryName}: Cannot resolve texture ${originalTexturePath} for ${_originalKey} because it is not defined`)
+                    return
                 } else {
-                    return existingKey
+                    return resolveTexture(existingKey, originalTexturePath, chain)
                 }
             }
-            return
+            return originalTexturePath
         }
         for (let [key, value] of Object.entries(this.resolvedModel.textures ?? {})) {
             if (!value.includes('#')) continue
-            const resolved = resolveTexture(value, key)
+            const resolved = resolveTexture(value, key, [])
             if (resolved) this.resolvedModel.textures![key] = resolved
             else delete this.resolvedModel.textures![key]
         }
