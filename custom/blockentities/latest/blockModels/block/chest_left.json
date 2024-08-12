@@ -1,7 +1,7 @@
 {
     "parent": "block/block",
     "textures": {
-        "particle": "#particle"
+        "particle": "#particles"
     },
     "elements": [
         {
@@ -73,12 +73,11 @@
                 "up": {
                     "texture": "#chest",
                     "uv": [
-                        3.5,
-                        4.75,
+                        11,
+                        0,
                         7.25,
-                        8.25
-                    ],
-                    "rotation": 180
+                        3.5
+                    ]
                 },
                 "north": {
                     "texture": "#chest",

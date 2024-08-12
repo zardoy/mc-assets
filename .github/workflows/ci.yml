@@ -1,0 +1,16 @@
+name: NPM Release
+on:
+  pull_request:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: latest
+          run_install: |
+            args: [--no-frozen-lockfile, --strict-peer-dependencies]
+      - run: mkdir ./data && git fetch origin && git --work-tree=./data checkout origin/gh-pages -- . && git reset
+      - run: pnpm build

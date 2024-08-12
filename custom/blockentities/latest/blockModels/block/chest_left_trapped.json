@@ -1,6 +1,6 @@
 {
     "parent": "block/chest_left",
     "textures": {
-        "chest": "entity/chest/trapped"
+        "chest": "entity/chest/trapped_left"
     }
 }
