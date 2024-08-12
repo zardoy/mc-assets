@@ -41,10 +41,10 @@ export class ItemsRenderer {
             properties,
         }, true)
         const resolvedModel = resolvedModelParts?.[0]
-        if (resolvedModel?.elements?.length !== 1) return
+        if (!resolvedModel?.elements?.length) return
+        const isAllFullModels = resolvedModel.elements.every(elem => elem.from[0] === 0 && elem.from[1] === 0 && elem.from[2] === 0 && elem.to[0] === 16 && elem.to[1] === 16 && elem.to[2] === 16)
+        if (!isAllFullModels) return
         const elem = resolvedModel.elements[0]!
-        if (elem.from[0] !== 0 || elem.from[1] !== 0 || elem.from[2] !== 0) return
-        if (elem.to[0] !== 16 || elem.to[1] !== 16 || elem.to[2] !== 16) return
         const topTexture = elem.faces.up?.texture ?? elem.faces.top?.texture!
         const leftTexture = elem.faces.east?.texture ?? elem.faces.left?.texture ?? elem.faces.side?.texture!
         const rightTexture = elem.faces.north?.texture ?? elem.faces.right?.texture ?? elem.faces.side?.texture!

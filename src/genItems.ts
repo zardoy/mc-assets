@@ -132,6 +132,13 @@ export const generateItemsAtlases = async () => {
   }
   addTextures['missing_texture'] = `data:image/png;base64,${fs.readFileSync(join('./custom/missing_texture.png'), 'base64')}`
 
+  latestModels['item/air'] = {
+    textures: {
+      layer0: 'air'
+    }
+  }
+  addTextures['air'] = `data:image/png;base64,${fs.readFileSync(join('./custom/air.png'), 'base64')}`
+
 
   for (const [name, model] of Object.entries(latestModels)) {
     if (!name.startsWith('item/')) continue
