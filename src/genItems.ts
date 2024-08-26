@@ -203,7 +203,7 @@ export const generateItemsAtlases = async () => {
 
   blockstatesModels['latestRootItems'] = Object.keys(allItemsModelsWithoutParentReference).map(m => m.replace('item/', ''))
 
-  fs.writeFileSync('./inv.json', JSON.stringify(usedInvsprite, null, 4), 'utf8')
+  // fs.writeFileSync('./inv.json', JSON.stringify(usedInvsprite, null, 4), 'utf8')
   fs.writeFileSync('./dist/blockStatesModels.json', JSON.stringify(blockstatesModels, null, 4), 'utf8')
 }
 
