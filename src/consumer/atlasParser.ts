@@ -30,7 +30,6 @@ type StoreType = Texture & { imageType: 'latest' | 'legacy', version: string }
 type DataUrl = string
 export class AtlasParser {
     atlasStore: VersionedStore<StoreType>
-    itemsCanvas
     atlasHasLegacyImage: boolean
 
     constructor(

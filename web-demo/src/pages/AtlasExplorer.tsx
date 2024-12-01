@@ -84,6 +84,10 @@ export default function AtlasExplorer() {
     }, [selectedAtlas])
 
     const [cursorName, setCursorName] = useState<string>('')
+    const [cursorPos, setCursorPos] = useState<{
+        x: number,
+        y: number
+    } | null>(null)
     const [highlightTexture, setHighlightTexture] = useState<{
         name: string,
         u: number,
@@ -168,9 +172,14 @@ export default function AtlasExplorer() {
             const { u, v, su, sv } = texture
             if (currentU >= u && currentU <= u + (su ?? currentAtlas.suSv) && currentV >= v && currentV <= v + (sv ?? currentAtlas.suSv)) {
                 setCursorName(name)
+                setCursorPos({
+                    x: Math.floor(currentU * currentAtlas.width / currentAtlas.tileSize),
+                    y: Math.floor(currentV * currentAtlas.height / currentAtlas.tileSize)
+                })
                 return
             }
         }
+        setCursorPos(null)
         setCursorName('')
     }
 
@@ -220,7 +229,7 @@ export default function AtlasExplorer() {
         </div>}
         <div className='flex flex-col gap-2'>
             <div>
-                <div className='text-xl'>Cursor: {cursorName}</div>
+                <div className='text-xl'>Cursor: {cursorName} {cursorPos ? `(${cursorPos.x}, ${cursorPos.y})` : ''}</div>
             </div>
             <div className='flex gap-2'>
                 <div className='text-xl'>Highlight: {highlightStr}</div>
@@ -240,6 +249,9 @@ export default function AtlasExplorer() {
         <div className='flex gap-2 max-sm:flex-col'>
             <canvas
                 className='border border-black'
+                style={{
+                    imageRendering: 'pixelated',
+                }}
                 ref={canvasRef}
                 onPointerMove={e => {
                     setData(e, true)
