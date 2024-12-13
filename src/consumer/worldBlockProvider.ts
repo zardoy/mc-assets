@@ -19,7 +19,7 @@ export default function worldBlockProvider(blockstatesModels: any, blocksAtlas: 
                     const { elements, textures, ...rest } = model
                     return {
                         // todo validate elements
-                        elements: elements?.map((elem) => {
+                        elements: elements!?.map((elem) => {
                             return {
                                 ...elem,
                                 faces: Object.fromEntries(Object.entries(elem.faces).map(([faceName, face]) => {

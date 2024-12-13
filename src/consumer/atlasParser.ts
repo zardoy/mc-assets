@@ -73,7 +73,7 @@ export class AtlasParser {
         }
     }
 
-    async makeNewAtlas(version: string, getCustomImage?: (itemName: string) => DataUrl | HTMLImageElement | boolean | void, tileSize = this.atlas.latest.tileSize) {
+    async makeNewAtlas(version: string, getCustomImage?: (itemName: string) => DataUrl | HTMLImageElement | boolean | void, _unusedTileSize = this.atlas.latest.tileSize, getTextureSortRankOrTopTextures?: string[] | ((key: string) => number), addTextures = [] as string[]) {
         const itemsAtlases = this.atlasJson as ItemsAtlases
         type CoordsAndImage = {
             u: number
@@ -85,7 +85,7 @@ export class AtlasParser {
         const newTextures: Record<string, CoordsAndImage> = {}
         const legacyImg = this.atlasHasLegacyImage ? await getLoadedImage(this.legacyImage!) : null
         const latestImg = await getLoadedImage(this.latestImage)
-        for (const [itemName, texture] of Object.entries(itemsAtlases.latest.textures)) {
+        for (const itemName of new Set([...Object.keys(itemsAtlases.latest.textures), ...addTextures])) {
             const customImage = getCustomImage?.(itemName)
             if (customImage === false) continue
             if (customImage && customImage !== true) {
@@ -100,7 +100,7 @@ export class AtlasParser {
                 continue
             }
             const info = this.getTextureInfo(itemName, version)
-            if (!info) throw new Error(`Missing texture info for ${itemName}`)
+            if (!info) throw new Error(`Missing texture info from the provided atlas for ${itemName} and not custom data is provided`)
             const { u, v, su, sv } = info
             const atlas = info.version === 'latest' ? itemsAtlases.latest : itemsAtlases.legacy!
             const image = info.imageType === 'latest' ? latestImg : legacyImg
@@ -114,8 +114,13 @@ export class AtlasParser {
             }
         }
 
+        const newTexturesKeys = Object.keys(newTextures)
+        if (getTextureSortRankOrTopTextures) {
+            const getRankFn = typeof getTextureSortRankOrTopTextures === 'function' ? getTextureSortRankOrTopTextures : (key: string) => getTextureSortRankOrTopTextures.includes(key) ? 1 : -1
+            newTexturesKeys.sort((a, b) => getRankFn(b) - getRankFn(a))
+        }
         const { json, canvas } = makeTextureAtlas({
-            input: Object.keys(newTextures),
+            input: newTexturesKeys,
             getLoadedImage: (name) => {
                 const texture = newTextures[name]!
                 const image = texture.img
