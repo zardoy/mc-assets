@@ -17,7 +17,7 @@ export class ItemsRenderer {
     }
 
     resolveTexture(texture: string) {
-        const type = texture.includes('items/') ? 'items' : texture.startsWith('block/') ? 'blocks' : 'items'
+        const type = texture.includes('items/') ? 'items' : (texture.includes('block/') || texture.includes('blocks/')) ? 'blocks' : 'items'
         const atlasParser = type === 'blocks' ? this.blocksAtlasParser! : this.itemsAtlasParser
         const textureInfo = atlasParser.getTextureInfo(texture.replace('block/', '').replace('blocks/', '').replace('item/', '').replace('items/', ''), this.version)!
         const atlas = atlasParser.atlas[textureInfo.imageType]!
@@ -62,12 +62,12 @@ export class ItemsRenderer {
             model = this.modelsStore.get(this.version, itemName)
         } else {
             model = this.modelsStore.get(this.version, `item/${itemName}`)
-            if (!model || model.parent?.startsWith('block/')) {
+            if (!model || model.parent?.includes('block/') || this.modelsStore.get(this.version, `block/${itemName}`)) {
                 return this.tryGetFullBlock(itemName, properties)
             }
         }
         if (!model) return
-        const texture = itemName.startsWith('block/') ?
+        const texture = itemName.includes('block/') ?
             // first defined block texture
             Object.values(model.textures ?? {})[0] :
             model.textures?.layer0 // classic item texture
