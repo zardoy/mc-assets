@@ -16,4 +16,5 @@ const itemsAtlasParser = new AtlasParser(itemsAtlases, '')
 const blocksAtlasParser = new AtlasParser(blocksAtlases, '')
 
 // console.log(blocksAtlasParser.getTextureInfo("entity/decorated_pot/decorated_pot_base"))
-console.log(new ItemsRenderer('latest', blockstatesModels, itemsAtlasParser, blocksAtlasParser).getItemTexture('block/errored'))
+const itemRenderer = new ItemsRenderer('latest', blockstatesModels, itemsAtlasParser, blocksAtlasParser);
+console.log(itemRenderer.getItemTexture('item_frame'))

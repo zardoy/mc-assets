@@ -1,7 +1,8 @@
-name: NPM Release
+name: Release
+
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   release:

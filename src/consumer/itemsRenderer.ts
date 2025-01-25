@@ -62,7 +62,7 @@ export class ItemsRenderer {
             model = this.modelsStore.get(this.version, itemName)
         } else {
             model = this.modelsStore.get(this.version, `item/${itemName}`)
-            if (!model || model.parent?.includes('block/') || this.modelsStore.get(this.version, `block/${itemName}`)) {
+            if (!model || model.parent?.includes('block/')) {
                 return this.tryGetFullBlock(itemName, properties)
             }
         }
