@@ -25,7 +25,7 @@
         "@xmcl/core": "^2.13.0",
         "@xmcl/installer": "^5.4.0",
         "@zardoy/tsconfig": "^1.5.1",
-        "canvas": "^2.11.2",
+        "canvas": "^3.1.0",
         "filesize": "^10.1.4",
         "imagemin": "^9.0.0",
         "imagemin-optipng": "^8.0.0",
