@@ -61,5 +61,10 @@
         "minecraft extracter",
         "minecraft block model parser",
         "minecraft block entity"
-    ]
+    ],
+    "pnpm": {
+        "overrides": {
+            "sharp": "0.33.5"
+        }
+    }
 }
