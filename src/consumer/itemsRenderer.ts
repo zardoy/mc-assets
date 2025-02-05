@@ -20,6 +20,7 @@ export class ItemsRenderer {
         const type = texture.includes('items/') ? 'items' : (texture.includes('block/') || texture.includes('blocks/')) ? 'blocks' : 'items'
         const atlasParser = type === 'blocks' ? this.blocksAtlasParser! : this.itemsAtlasParser
         const textureInfo = atlasParser.getTextureInfo(texture.replace('block/', '').replace('blocks/', '').replace('item/', '').replace('items/', ''), this.version)!
+        if (!textureInfo) return
         const atlas = atlasParser.atlas[textureInfo.imageType]!
         return {
             slice: [
@@ -49,30 +50,38 @@ export class ItemsRenderer {
         const leftTexture = elem.faces.east?.texture ?? elem.faces.left?.texture ?? elem.faces.side?.texture!
         const rightTexture = elem.faces.north?.texture ?? elem.faces.right?.texture ?? elem.faces.side?.texture!
         if (!topTexture || !leftTexture || !rightTexture) return
+        const topTextureResolved = this.resolveTexture(topTexture);
+        if (!topTextureResolved) throw new Error(`Missing texture for ${blockName} top texture`)
+        const leftTextureResolved = this.resolveTexture(leftTexture);
+        if (!leftTextureResolved) throw new Error(`Missing texture for ${blockName} left texture`)
+        const rightTextureResolved = this.resolveTexture(rightTexture);
+        if (!rightTextureResolved) throw new Error(`Missing texture for ${blockName} right texture`)
         return {
-            top: this.resolveTexture(topTexture),
-            left: this.resolveTexture(leftTexture),
-            right: this.resolveTexture(rightTexture),
+            top: topTextureResolved,
+            left: leftTextureResolved,
+            right: rightTextureResolved,
         }
     }
 
-    getItemTexture(itemName: string, properties: Record<string, string | boolean> = {}) {
+    getItemTexture(itemNameOrModel: string, properties: Record<string, string | boolean> = {}, exactItemResolve = false) {
+        itemNameOrModel = itemNameOrModel.replace(/^minecraft:/, '')
         let model: ItemModel | undefined
-        if (itemName.includes('/')) {
-            model = this.modelsStore.get(this.version, itemName)
+        if (itemNameOrModel.includes('/') || exactItemResolve) {
+            model = this.modelsStore.get(this.version, itemNameOrModel)
         } else {
-            model = this.modelsStore.get(this.version, `item/${itemName}`)
+            model = this.modelsStore.get(this.version, `item/${itemNameOrModel}`)
             if (!model || model.parent?.includes('block/')) {
-                return this.tryGetFullBlock(itemName, properties)
+                return this.tryGetFullBlock(itemNameOrModel, properties)
             }
         }
         if (!model) return
-        const texture = itemName.includes('block/') ?
+        const texture = itemNameOrModel.includes('block/') ?
             // first defined block texture
             Object.values(model.textures ?? {})[0] :
             model.textures?.layer0 // classic item texture
         if (!texture) return
-        return this.resolveTexture(texture)
+        return (texture.startsWith('invsprite_') ? this.resolveTexture(texture.replace('invsprite_', '')) : undefined)
+            ?? this.resolveTexture(texture)
         // const {resolvedModel} = this.assetsParser.getResolvedModelByModelName('item/' + itemName, itemName) ?? {}
         // resolvedModel?.textures['layer0']
     }
