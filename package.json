@@ -67,12 +67,12 @@
             "sharp": "0.33.5"
         },
         "ignoredBuiltDependencies": [
-            "core-js",
-            "optipng-bin"
+            "core-js"
         ],
         "onlyBuiltDependencies": [
             "canvas",
             "esbuild",
+            "optipng",
             "sharp"
         ]
     },
