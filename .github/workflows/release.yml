@@ -16,6 +16,8 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: Install & Enable Corepack
         run: npm install -g corepack && corepack enable
+      - name: Install Dependencies
+        run: pnpm install
       - run: mkdir ./data && git fetch origin && git --work-tree=./data checkout origin/gh-pages -- . && git reset
       - name: Set publishing config
         run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
