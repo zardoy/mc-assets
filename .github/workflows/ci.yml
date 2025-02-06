@@ -13,5 +13,5 @@ jobs:
           run_install: |
             args: [--no-frozen-lockfile, --strict-peer-dependencies]
       - run: mkdir ./data && git fetch origin && git --work-tree=./data checkout origin/gh-pages -- . && git reset
-      - run: pnpm test
       - run: pnpm build
+      - run: pnpm test
