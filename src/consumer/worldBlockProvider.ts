@@ -16,7 +16,7 @@ export default function worldBlockProvider(blockstatesModels: any, blocksAtlas: 
         return atlasParser.getTextureInfo(textureName.replace('block/', '').replace('blocks/', ''), version)
     }
 
-    const transformModel = (model: BlockModel | ResolveModelReturnType[number][number], block: Omit<QueriedBlock, 'stateId'>) => {
+    const transformModel = <T extends BlockModel | ResolveModelReturnType[number][number]>(model: T, block: Omit<QueriedBlock, 'stateId'>) => {
         const { elements, textures, ...rest } = model
         return {
             // todo validate elements
