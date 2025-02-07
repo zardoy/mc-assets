@@ -139,12 +139,19 @@ export class AssetsParser {
         return modelsResolved // todo figure out the type error
     }
 
-    private getResolvedModelsByModel(model: string, debugQueryName?: string, clearModel = true) {
+    public getResolvedModelsByModel(model: string, debugQueryName?: string, clearModel = true) {
         if (clearModel) {
             this.resolvedModel = {}
         }
         const modelData = this.blockModelsStore.get(this.version, model)
         if (!modelData) return
+        return this.getResolvedModelsByModelData(modelData, debugQueryName, clearModel)
+    }
+
+    public getResolvedModelsByModelData(modelData: BlockModel, debugQueryName?: string, clearModel = true) {
+        if (clearModel) {
+            this.resolvedModel = {}
+        }
         const collectedParentModels = [] as BlockModel[]
         const collectModels = (model: BlockModel) => {
             collectedParentModels.push(model)

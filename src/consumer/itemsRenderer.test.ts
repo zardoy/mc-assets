@@ -13,11 +13,19 @@ describe('ItemsRenderer', () => {
     const blocksAtlasParser = new AtlasParser(blocksAtlases, '')
     const renderer = new ItemsRenderer('latest', blockstatesModels, itemsAtlasParser, blocksAtlasParser)
 
+    const getItemTexture = (item: string) => {
+        const result = renderer.getItemTexture(item)
+        if (!result) return result
+        result['resolvedModel'] = !!result['resolvedModel']
+        return result
+    }
+
     describe('getItemTexture', () => {
         it('items texture', () => {
-            expect(renderer.getItemTexture('item_frame')).toMatchInlineSnapshot(`
+            expect(getItemTexture('item_frame')).toMatchInlineSnapshot(`
               {
                 "path": "items",
+                "resolvedModel": false,
                 "slice": [
                   720,
                   128,
@@ -30,7 +38,7 @@ describe('ItemsRenderer', () => {
         })
 
         it('full blocks texture', () => {
-            expect(renderer.getItemTexture('stone')).toMatchInlineSnapshot(`
+            expect(getItemTexture('stone')).toMatchInlineSnapshot(`
               {
                 "left": {
                   "path": "blocks",
@@ -42,6 +50,7 @@ describe('ItemsRenderer', () => {
                   ],
                   "type": "blocks",
                 },
+                "resolvedModel": true,
                 "right": {
                   "path": "blocks",
                   "slice": [
@@ -67,9 +76,10 @@ describe('ItemsRenderer', () => {
         })
 
         it('invsprite textures', () => {
-            expect(renderer.getItemTexture('chest')).toMatchInlineSnapshot(`
+            expect(getItemTexture('chest')).toMatchInlineSnapshot(`
               {
                 "path": "items",
+                "resolvedModel": false,
                 "slice": [
                   400,
                   0,
@@ -82,7 +92,8 @@ describe('ItemsRenderer', () => {
         })
 
         it('not implemented logic', () => {
-            expect(renderer.getItemTexture('cut_copper_slab')).toMatchInlineSnapshot(`undefined`)
+            expect(getItemTexture('cut_copper_slab')).toMatchInlineSnapshot(`undefined`)
+            expect(getItemTexture('bla_bla')).toMatchInlineSnapshot(`undefined`)
         })
     })
 
@@ -100,6 +111,8 @@ describe('ItemsRenderer', () => {
                 "type": "items",
               }
             `)
+
+            expect(renderer.resolveTexture('bla')).toMatchInlineSnapshot(`undefined`)
         })
     })
 })

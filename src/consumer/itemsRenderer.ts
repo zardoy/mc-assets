@@ -1,7 +1,7 @@
 import { AtlasParser } from './atlasParser';
 import { AssetsParser } from './assetsParser';
 import { BlockModelsStore, BlockStatesStore, getLoadedBlockstatesStore, getLoadedModelsStore } from './stores';
-import { ItemModel } from './types';
+import { BlockModel, ItemModel } from './types';
 
 type TextureSlice = [absoluteX: number, absoluteY: number, width: number, height: number]
 
@@ -35,13 +35,9 @@ export class ItemsRenderer {
         }
     }
 
-    tryGetFullBlock(blockName: string, properties: Record<string, string | boolean> = {}) {
+    tryGetFullBlock(model: any, blockName: string) {
         if (!this.blocksAtlasParser) return
-        const resolvedModelParts = this.assetsParser.getResolvedModelFirst({
-            name: blockName,
-            properties,
-        }, true)
-        const resolvedModel = resolvedModelParts?.[0]
+        const { resolvedModel } = this.assetsParser.getResolvedModelsByModelData(model)
         if (!resolvedModel?.elements?.length) return
         const isAllFullModels = resolvedModel.elements.every(elem => elem.from[0] === 0 && elem.from[1] === 0 && elem.from[2] === 0 && elem.to[0] === 16 && elem.to[1] === 16 && elem.to[2] === 16)
         if (!isAllFullModels) return
@@ -60,22 +56,34 @@ export class ItemsRenderer {
             top: topTextureResolved,
             left: leftTextureResolved,
             right: rightTextureResolved,
+            resolvedModel: resolvedModel as BlockModel
         }
     }
 
-    getItemTexture(itemNameOrModel: string, properties: Record<string, string | boolean> = {}, exactItemResolve = false) {
-        itemNameOrModel = itemNameOrModel.replace(/^minecraft:/, '')
+    getItemTexture(itemNameOrModel: string, _properties: Record<string, string | boolean> = {}, exactItemResolve = false) {
+        let [_namespace, _name] = itemNameOrModel.includes(':') ? itemNameOrModel.split(':') : ['minecraft', itemNameOrModel]
+        const namespace = _namespace === 'minecraft' ? '' : _namespace!
+        const name = _name!
+        const itemModelPath = namespace ? `${namespace}:item/${name}` : `item/${name}`
+        const blockModelPath = namespace ? `${namespace}:block/${name}` : `block/${name}`
+        const cleanFullModelPath = namespace ? `${namespace}:${name}` : name
+
         let model: ItemModel | undefined
-        if (itemNameOrModel.includes('/') || exactItemResolve) {
-            model = this.modelsStore.get(this.version, itemNameOrModel)
+        if (cleanFullModelPath.includes('/') || exactItemResolve) {
+            model = this.modelsStore.get(this.version, cleanFullModelPath)
         } else {
-            model = this.modelsStore.get(this.version, `item/${itemNameOrModel}`)
-            if (!model || model.parent?.includes('block/')) {
-                return this.tryGetFullBlock(itemNameOrModel, properties)
+            model = this.modelsStore.get(this.version, itemModelPath)
+            let blockModel = model?.parent?.includes('block/')
+            if (!model) {
+                model = this.modelsStore.get(this.version, blockModelPath)
+                if (model) blockModel = true
+            }
+            if (blockModel) {
+                return this.tryGetFullBlock(model, cleanFullModelPath)
             }
         }
         if (!model) return
-        const texture = itemNameOrModel.includes('block/') ?
+        const texture = cleanFullModelPath.includes('block/') ?
             // first defined block texture
             Object.values(model.textures ?? {})[0] :
             model.textures?.layer0 // classic item texture
