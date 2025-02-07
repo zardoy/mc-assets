@@ -10,6 +10,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      zod:
+        specifier: ^3.24.1
+        version: 3.24.1
     devDependencies:
       '@types/node':
         specifier: ^20.14.8
@@ -2222,6 +2226,9 @@ packages:
   yazl@2.5.1:
     resolution: {integrity: sha512-phENi2PLiHnHb6QBVot+dJnaAZ0xosj7p3fWl+znIjBDlnMI2PsZCJZ306BPTFOaHf5qdDEI8x5qFrSOBN5vrw==}
 
+  zod@3.24.1:
+    resolution: {integrity: sha512-muH7gBL9sI1nciMZV67X5fTKKBLtwpZ5VBp1vsOQzj1MhrBZ4wlVCm3gedKZWLp0Oyel8sIGfeiz54Su+OVT+A==}
+
 snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
@@ -4320,3 +4327,5 @@ snapshots:
   yazl@2.5.1:
     dependencies:
       buffer-crc32: 0.2.13
+
+  zod@3.24.1: {}

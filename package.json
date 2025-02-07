@@ -4,7 +4,7 @@
     "author": "Vitaly Turovsky <vital2580@icloud.com>",
     "license": "MIT",
     "scripts": {
-        "build": "tsx src/datapaths-builder.ts && tsx src/blockEntities.ts && tsx src/newAssetsBuilder.ts && tsx src/genItems.ts && tsx src/genParticles.ts && tsx src/genBlocks.ts && tsx src/copyOtherTextures.ts && tsx src/compressImages.ts && pnpm type-check && pnpm build-consumer && pnpm build-web && tsx src/buildEndChecks.ts && tsx src/changeReadme.ts",
+        "build": "tsx src/datapaths-builder.ts && tsx src/blockEntities.ts && tsx src/newAssetsBuilder.ts && tsx src/genItems.ts && tsx src/genParticles.ts && tsx src/genBlocks.ts && tsx src/itemDefinitionsBuilder.ts && tsx src/copyOtherTextures.ts && tsx src/compressImages.ts && pnpm type-check && pnpm build-consumer && pnpm build-web && tsx src/buildEndChecks.ts && tsx src/changeReadme.ts",
         "use-cached-datapaths": "mkdir ./data && git fetch origin && git --work-tree=./data checkout origin/gh-pages -- . && git reset",
         "type-check": "tsc --noEmit",
         "regen-blockentities": "rm -f dist/blockStatesModels.json && tsx src/blockEntities.ts && tsx src/newAssetsBuilder.ts && tsx src/genBlocks.ts",
@@ -76,5 +76,8 @@
             "sharp"
         ]
     },
-    "packageManager": "pnpm@10.2.0+sha512.0d27364e0139c6aadeed65ada153135e0ca96c8da42123bd50047f961339dc7a758fc2e944b428f52be570d1bd3372455c1c65fa2e7aa0bfbf931190f9552001"
+    "packageManager": "pnpm@10.2.0+sha512.0d27364e0139c6aadeed65ada153135e0ca96c8da42123bd50047f961339dc7a758fc2e944b428f52be570d1bd3372455c1c65fa2e7aa0bfbf931190f9552001",
+    "dependencies": {
+        "zod": "^3.24.1"
+    }
 }
