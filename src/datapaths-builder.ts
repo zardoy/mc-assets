@@ -39,6 +39,7 @@ const processVersionData = async (version: MinecraftVersion, isLatest: boolean) 
         'assets/minecraft/particles/': 'textures/particles/',
         'assets/minecraft/blockstates/': 'blockstates/',
         'assets/minecraft/models/': 'models/',
+        'assets/minecraft/items/': 'items/',
     }
     const allVersionsMergedData = {
         // 'assets/minecraft/lang/en_us.json',

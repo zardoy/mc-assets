@@ -10,6 +10,7 @@ npm i mc-assets
 
 ## Features
 
+- **NEW ITEMS FORMAT SUPPORT!!!** - Get different item models based on conditions (using item, display context, etc)
 - **Automatic Updates** - This library is automatically updated and published to npm.
 - **Fully Typed** - Today is nothing can be done without TypeScript. We ship best type definitions possible.
 - **Early Access** - It always includes the latest pre and rc (release candidate) version.
@@ -163,6 +164,106 @@ const ButtonHighlighted = styled(Button)`
 ```
 
 Please, don't use json / image files directly as their format is not stable and can change in the future, use the parsers instead.
+
+### Item Definitions
+
+The library provides a powerful system to handle dynamic item models that change based on various conditions:
+
+```ts
+import { getLoadedItemDefinitionsStore } from 'mc-assets'
+import { getItemDefinition } from 'mc-assets/dist/itemsDefinitions'
+import itemDefinitions from 'mc-assets/dist/itemDefinitions.json'
+
+const store = getLoadedItemDefinitionsStore(itemDefinitions)
+// we have zod schema as well as typescript types for item definitions
+
+// Example 1: Bow animation when pulling
+const bowModel = getItemDefinition(store, {
+    version: 'latest',
+    name: 'bow',
+    properties: { // full autocomplete of supported properties
+        'minecraft:using_item': true,
+        'minecraft:use_duration': 20 // Time in ticks, affects pull-back animation
+    }
+})
+// Returns: { model: 'minecraft:item/bow_pulling_2' } for full pull-back
+
+// Example 2: Bundle with items in inventory
+const bundleModel = getItemDefinition(store, {
+    version: 'latest',
+    name: 'brown_bundle',
+    properties: {
+        'minecraft:display_context': 'gui',
+        'minecraft:bundle/has_selected_item': true
+    }
+})
+// Returns composite model showing bundle with items when in inventory
+
+// Example 3: Clock showing time in different dimensions
+const clockModel = getItemDefinition(store, {
+    version: 'latest',
+    name: 'clock',
+    properties: {
+        'minecraft:time': 0.5,
+        'minecraft:context_dimension': 'minecraft:overworld'
+    }
+})
+// Returns appropriate clock face model based on time
+
+// Example 4: Compass pointing to targets
+const compassModel = getItemDefinition(store, {
+    version: 'latest',
+    name: 'compass',
+    properties: {
+        'minecraft:compass': 16,
+        'minecraft:context_dimension': 'minecraft:overworld',
+        'minecraft:has_component': false // true for lodestone compass
+    }
+})
+// Returns compass model pointing in the right direction
+
+// Example 5: Armor with trims
+const armorModel = getItemDefinition(store, {
+    version: 'latest',
+    name: 'chainmail_boots',
+    properties: {
+        'minecraft:trim_material': 'minecraft:diamond'
+    }
+})
+// Returns: { model: 'minecraft:item/chainmail_boots_diamond_trim' }
+```
+
+The item definition system supports various property types:
+- `minecraft:using_item`: Boolean for items being actively used
+- `minecraft:use_duration`: Number of ticks an item has been used
+- `minecraft:display_context`: Where the item is being displayed ('gui', 'ground', 'fixed', etc.)
+- `minecraft:time`: Time value for clock animations
+- `minecraft:context_dimension`: Current dimension affecting item behavior
+- `minecraft:compass`: Direction value for compass
+- `minecraft:has_component`: Special properties like lodestone tracking
+- `minecraft:trim_material`: Material used for armor trims
+- `minecraft:bundle/has_selected_item`: Bundle content state
+- And more...
+
+Each model can include:
+- Base model path
+- Tint information
+- Special rendering instructions
+- Watch properties for dynamic updates
+
+Handy method `getItemDefinitionModelResolved` is provided which includes the resolved texture information:
+
+```ts
+import { ItemsRenderer } from 'mc-assets'
+
+const renderer = new ItemsRenderer(/* ... */)
+const resolvedModel = getItemDefinitionModelResolved(store, {
+    version: 'latest',
+    name: 'bow',
+    properties: { /* ... */ }
+}, renderer)
+// Returns texture info ready to render
+```
 
 ## Building
 
