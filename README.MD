@@ -20,7 +20,7 @@ npm i mc-assets
 - **Easy to Use Items Textures** - Includes hand-crafted isometric textures for some blocks.
 - **Block Entities Models** - Includes community-crafted models for block entities.
 
-This module was originally designed as standalone package for [https://mcraft.fun](mcraft.fun) (repo) project so it is easier to maintain, but now it became a library that I think can cover any use case where you need to work with minecraft assets. This library means block states, models data and texture contents, it doesn't cover minecraft-data use cases. With the best block model parser you can build your own renderers, editors, etc.
+This module was originally designed as standalone package for [https://mcraft.fun](mcraft.fun) ([repo](https://github.com/zardoy/minecraft-web-client/)) project so it is easier to maintain, but now it became a library that I think can cover any use case where you need to work with minecraft assets. This library means block states, models data and texture contents, it doesn't cover minecraft-data use cases. With the best block model parser you can build your own renderers, editors, etc.
 
 For contributing & building instructions see [building](#building) section.
 
@@ -31,7 +31,7 @@ For contributing & building instructions see [building](#building) section.
 
 [Atlas explorer (web demo)](https://zardoy.github.io/mc-assets/).
 
-[External Models Playground](https://mcraft.fun/playground.html)
+[External Models Playground](https://mcraft.fun/playground/) ([Beta Version](https://s.mcraft.fun/playground/)).
 
 ## Usage
 
@@ -234,6 +234,7 @@ const armorModel = getItemDefinition(store, {
 ```
 
 The item definition system supports various property types:
+
 - `minecraft:using_item`: Boolean for items being actively used
 - `minecraft:use_duration`: Number of ticks an item has been used
 - `minecraft:display_context`: Where the item is being displayed ('gui', 'ground', 'fixed', etc.)
@@ -246,6 +247,7 @@ The item definition system supports various property types:
 - And more...
 
 Each model can include:
+
 - Base model path
 - Tint information
 - Special rendering instructions
