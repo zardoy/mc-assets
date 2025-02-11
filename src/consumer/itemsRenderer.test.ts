@@ -8,6 +8,8 @@ const blockstatesModels = JSON.parse(fs.readFileSync('./dist/blockStatesModels.j
 const itemsAtlases = JSON.parse(fs.readFileSync('./dist/itemsAtlases.json', 'utf8'))
 const blocksAtlases = JSON.parse(fs.readFileSync('./dist/blocksAtlases.json', 'utf8'))
 
+blockstatesModels.models.latest['test:block/test'] = blockstatesModels.models.latest['minecraft:block/stone']
+
 describe('ItemsRenderer', () => {
     const itemsAtlasParser = new AtlasParser(itemsAtlases, '')
     const blocksAtlasParser = new AtlasParser(blocksAtlases, '')
@@ -37,8 +39,46 @@ describe('ItemsRenderer', () => {
             `)
         })
 
-        it('full blocks texture', () => {
-            expect(getItemTexture('stone')).toMatchInlineSnapshot(`
+      it('full blocks texture', () => {
+        expect(getItemTexture('stone')).toMatchInlineSnapshot(`
+              {
+                "left": {
+                  "path": "blocks",
+                  "slice": [
+                    816,
+                    64,
+                    16,
+                    16,
+                  ],
+                  "type": "blocks",
+                },
+                "resolvedModel": true,
+                "right": {
+                  "path": "blocks",
+                  "slice": [
+                    816,
+                    64,
+                    16,
+                    16,
+                  ],
+                  "type": "blocks",
+                },
+                "top": {
+                  "path": "blocks",
+                  "slice": [
+                    816,
+                    64,
+                    16,
+                    16,
+                  ],
+                  "type": "blocks",
+                },
+              }
+            `)
+        })
+
+        it('block/stone', () => {
+            expect(getItemTexture('block/stone')).toMatchInlineSnapshot(`
               {
                 "left": {
                   "path": "blocks",

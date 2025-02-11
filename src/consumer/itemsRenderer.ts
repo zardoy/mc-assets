@@ -68,17 +68,23 @@ export class ItemsRenderer {
         const blockModelPath = namespace ? `${namespace}:block/${name}` : `block/${name}`
         const cleanFullModelPath = namespace ? `${namespace}:${name}` : name
 
+        const resolveModel = (path: string) => {
+            // todo resolve deep
+            return this.modelsStore.get(this.version, path)
+        }
+
         let model: ItemModel | undefined
-        if (cleanFullModelPath.includes('/') || exactItemResolve) {
-            model = this.modelsStore.get(this.version, cleanFullModelPath)
-        } else {
-            model = this.modelsStore.get(this.version, itemModelPath)
+        {
+            model = resolveModel(cleanFullModelPath)
+            if (!exactItemResolve) {
+                model ??= resolveModel(itemModelPath)
+            }
             let blockModel = model?.parent?.includes('block/')
             if (!model) {
-                model = this.modelsStore.get(this.version, blockModelPath)
+                model = resolveModel(blockModelPath)
                 if (model) blockModel = true
             }
-            if (blockModel) {
+            if (blockModel || model?.elements) {
                 return this.tryGetFullBlock(model, cleanFullModelPath)
             }
         }
