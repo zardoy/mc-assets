@@ -94,3 +94,16 @@ fs.writeFileSync('./dist/blocksAtlases.json', JSON.stringify({
     latest: latestAtlas,
     legacy: legacyAtlas
 }, null, 4), 'utf8')
+
+// write lastBlockStatesModels.json for debugging
+
+for (const version of Object.keys(blockstatesModels.models)) {
+    if (version === 'latest') continue
+    delete blockstatesModels.models[version]
+}
+for (const version of Object.keys(blockstatesModels.blockstates)) {
+    if (version === 'latest') continue
+    delete blockstatesModels.blockstates[version]
+}
+
+fs.writeFileSync('./temp/lastBlockStatesModels.json', JSON.stringify(blockstatesModels, null, 4), 'utf8')

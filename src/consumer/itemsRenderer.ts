@@ -35,6 +35,24 @@ export class ItemsRenderer {
         }
     }
 
+    resolveBlockModel(model: any, blockName: string) {
+        if (!this.blocksAtlasParser) return
+        const { resolvedModel } = this.assetsParser.getResolvedModelsByModelData(model)
+        if (!resolvedModel?.elements?.length) return
+        return {
+            resolvedModel,
+            get top(): string {
+                throw new Error('Was called with onlyResolveBlockModel = true')
+            },
+            get left(): string {
+                throw new Error('Was called with onlyResolveBlockModel = true')
+            },
+            get right(): string {
+                throw new Error('Was called with onlyResolveBlockModel = true')
+            }
+        }
+    }
+
     tryGetFullBlock(model: any, blockName: string) {
         if (!this.blocksAtlasParser) return
         const { resolvedModel } = this.assetsParser.getResolvedModelsByModelData(model)
@@ -60,7 +78,7 @@ export class ItemsRenderer {
         }
     }
 
-    getItemTexture(itemNameOrModel: string, _properties: Record<string, string | boolean> = {}, exactItemResolve = false) {
+    getItemTexture(itemNameOrModel: string, _properties: Record<string, string | boolean> = {}, exactItemResolve = false, onlyResolveBlockModel = false) {
         let [_namespace, _name] = itemNameOrModel.includes(':') ? itemNameOrModel.split(':') : ['minecraft', itemNameOrModel]
         const namespace = _namespace === 'minecraft' ? '' : _namespace!
         const name = _name!
@@ -85,7 +103,7 @@ export class ItemsRenderer {
                 if (model) blockModel = true
             }
             if (blockModel || model?.elements) {
-                return this.tryGetFullBlock(model, cleanFullModelPath)
+                return onlyResolveBlockModel ? this.resolveBlockModel(model, cleanFullModelPath) : this.tryGetFullBlock(model, cleanFullModelPath)
             }
         }
         if (!model) return

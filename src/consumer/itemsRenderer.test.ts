@@ -13,7 +13,8 @@ blockstatesModels.models.latest['test:block/test'] = blockstatesModels.models.la
 describe('ItemsRenderer', () => {
     const itemsAtlasParser = new AtlasParser(itemsAtlases, '')
     const blocksAtlasParser = new AtlasParser(blocksAtlases, '')
-    const renderer = new ItemsRenderer('latest', blockstatesModels, itemsAtlasParser, blocksAtlasParser)
+  const version = '1.21.4';
+  const renderer = new ItemsRenderer(version, blockstatesModels, itemsAtlasParser, blocksAtlasParser)
 
     const getItemTexture = (item: string) => {
         const result = renderer.getItemTexture(item)
