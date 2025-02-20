@@ -66,17 +66,56 @@ export default function worldBlockProvider(blockstatesModels: any, blocksAtlas: 
     }
 
     return {
-        getAllResolvedModels0_1(block: Omit<QueriedBlock, 'stateId'>, fallbackVariant = false) {
+        getAllResolvedModels0_1(block: Omit<QueriedBlock, 'stateId'>, fallbackVariant = false, possibleIssues: string[] = [], matchedModels: string[] = [], matchedConditions: string[] = []) {
+            assetsParser.issues = []
+            assetsParser.matchedModels = []
+            assetsParser.matchedConditions = []
             const modelsParts = assetsParser.getAllResolvedModels(block, fallbackVariant) ?? []
+
+            possibleIssues.push(...assetsParser.issues)
+            matchedModels.push(...assetsParser.matchedModels)
+            matchedConditions.push(...assetsParser.matchedConditions)
+
+            if (!modelsParts.length) {
+                possibleIssues.push(`No models found for block ${block.name}`)
+                return []
+            }
 
             const interestedFaces = ['north', 'east', 'south', 'west', 'up', 'down']
 
-            return modelsParts.map(modelVariants => {
-                return modelVariants.map(model => {
-                    return transformModel(model, block);
-                }).filter(a => a.elements?.length)
-            }).filter(a => a.length)
+            try {
+                const result = modelsParts.map(modelVariants => {
+                    return modelVariants.map(model => {
+                        try {
+                            return transformModel(model, block);
+                        } catch (e) {
+                            possibleIssues.push(`Error transforming model for ${block.name}: ${e.message}`)
+                            return null
+                        }
+                    }).filter(a => a?.elements?.length)
+                }).filter(a => a.length)
+
+                if (!result.length) {
+                    possibleIssues.push(`No valid models after transformation for block ${block.name}`)
+                }
+
+                return result
+            } catch (e) {
+                possibleIssues.push(`Fatal error processing models for ${block.name}: ${e.message}`)
+                return []
+            }
         },
+        // getResolvedModels0_1(block: Omit<QueriedBlock, 'stateId'>, fallbackVariant = false) {
+        //     const modelsParts = assetsParser.getAllResolvedModels(block, fallbackVariant) ?? []
+
+        //     const interestedFaces = ['north', 'east', 'south', 'west', 'up', 'down']
+
+        //     return modelsParts.map(modelVariants => {
+        //         return modelVariants.map(model => {
+        //             return transformModel(model, block);
+        //         }).filter(a => a.elements?.length)
+        //     }).filter(a => a.length)
+        // },
         transformModel,
         getTextureInfo
     }

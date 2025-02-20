@@ -9,6 +9,13 @@ export interface QueriedBlock {
     }
 }
 
+const getNamespace = (name: string) => {
+    const parts = name.split(':')
+    if (parts.length === 1) return 'minecraft'
+    if (parts.length === 2) return parts[0]
+    return parts.slice(0, -1).join(':')
+}
+
 export type BlockElement = [from: BlockElementPos, to: BlockElementPos]
 export class AssetsParser {
     stateIdToElements: Record<string, BlockElement[] | 1> = {} // 1 is a special case for full blocks
@@ -52,7 +59,12 @@ export class AssetsParser {
     // looks like workaround
     private resolvedModel: Pick<BlockModel, 'textures' | 'ao' | 'elements'> & { x?: number, y?: number, z?: number, uvlock?: boolean, weight?: number } = {}
 
+    public issues: string[] = []
+    public matchedModels: string[] = []
+    public matchedConditions: string[] = []
     private getModelsByBlock(queriedBlock: Omit<QueriedBlock, 'stateId'>, fallbackVariant: boolean, multiOptim: boolean) {
+        this.matchedModels = []
+        this.matchedConditions = []
         const matchProperties = (block: Pick<QueriedBlock, 'properties'>, /* to match against */properties: string | (Record<string, string | boolean> & { OR?, AND?})) => {
             if (!properties) { return true }
 
@@ -77,8 +89,12 @@ export class AssetsParser {
 
         let applyModels = [] as BlockApplyModel[]
         const blockStates = this.blockStatesStore.get(this.version, queriedBlock.name)
-        if (!blockStates) return
+        if (!blockStates) {
+            this.issues.push(`Block ${queriedBlock.name} not found in all registered blockstates. Place it into assets/${getNamespace(queriedBlock.name)}/blockstates/${queriedBlock.name}.json`)
+            return
+        }
         const states = blockStates.variants
+        let stateMatched = false
         if (states) {
             let state = states[''] || states['normal']
             for (const key in states) {
@@ -88,21 +104,29 @@ export class AssetsParser {
                     break
                 }
             }
+            if (state) {
+                const matchedStateName = Object.entries(states).find(([key]) => state === states[key])?.[0]
+                this.matchedConditions.push(`variant:${matchedStateName}`)
+            }
             if (!state) {
                 if (fallbackVariant) {
-                    state = states[Object.keys(states)[0]!]
+                    const firstKey = Object.keys(states)[0]!
+                    state = states[firstKey]
+                    this.matchedConditions.push(`fallback:${firstKey}`)
                 } else {
                     return
                 }
             }
             if (state) {
                 applyModels.push(state)
+                stateMatched = true
             }
         }
         if (blockStates.multipart) {
             for (const { when, apply } of blockStates.multipart) {
                 if (!when || matchProperties(queriedBlock, when as any)) {
                     applyModels.push(apply)
+                    this.matchedConditions.push(when ? `multipart:${JSON.stringify(when)}` : 'multipart:always')
                 }
             }
             if (!applyModels.length && fallbackVariant) {
@@ -110,10 +134,21 @@ export class AssetsParser {
                 const apply = multipartWithWhen[0]?.apply
                 if (apply) {
                     applyModels.push(apply)
+                    this.matchedConditions.push('multipart:fallback')
                 }
             }
         }
-        if (!applyModels.length) return
+        if (!applyModels.length) {
+            if (!stateMatched) {
+                const blockstatesCount = Object.keys(states ?? {}).length;
+                if (blockstatesCount) {
+                    this.issues.push(`Block did not match any possible state (${blockstatesCount} possible states)`)
+                } else {
+                    this.issues.push(`Blockstates for ${queriedBlock.name} are not defined`)
+                }
+            }
+            return
+        }
         const modelsResolved = [] as typeof this.resolvedModel[][]
         let part = 0
         for (const model of applyModels) {
@@ -144,7 +179,11 @@ export class AssetsParser {
             this.resolvedModel = {}
         }
         const modelData = this.blockModelsStore.get(this.version, model)
-        if (!modelData) return
+        if (!modelData) {
+            this.issues.push(`Model ${model} not found. Ensure it is present in assets/${getNamespace(model)}/models/${model}.json`)
+            return
+        }
+        this.matchedModels.push(model)
         return this.getResolvedModelsByModelData(modelData, debugQueryName, clearModel)
     }
 
@@ -158,7 +197,11 @@ export class AssetsParser {
 
             if (model.parent) {
                 const parent = this.blockModelsStore.get(this.version, model.parent)
-                if (!parent) return
+                if (!parent) {
+                    this.issues.push(`Parent model ${model.parent} not found for ${debugQueryName}`)
+                    return
+                }
+                this.matchedModels.push(`parent:${model.parent}`)
                 collectModels(parent)
             }
         }
@@ -197,14 +240,12 @@ export class AssetsParser {
                 originalTexturePath = originalTexturePath.split('/').at(-1)!.replace('#', '')
                 this.resolvedModel.textures ??= {}
                 if (chain.includes(originalTexturePath)) {
-                    console.warn(`${debugQueryName}: Circular texture reference detected: ${chain.join(' -> ')}`)
+                    this.issues.push(`${debugQueryName}: Circular texture reference detected: ${chain.join(' -> ')}`)
                     return
                 }
                 const existingKey = this.resolvedModel.textures[originalTexturePath]
                 if (!existingKey) {
-                    // todo this also needs to be done at the validation stage
-                    // throw new Error(`Cannot resolve texture ${key} to ${value} because it is not defined`)
-                    console.warn(`${debugQueryName}: Cannot resolve texture ${originalTexturePath} for ${_originalKey} because it is not defined`)
+                    this.issues.push(`${debugQueryName}: Cannot resolve texture ${originalTexturePath} for ${_originalKey} because it is not defined`)
                     return
                 } else {
                     return resolveTexture(existingKey, originalTexturePath, chain)
