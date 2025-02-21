@@ -90,7 +90,7 @@ export default function worldBlockProvider(blockstatesModels: any, blocksAtlas: 
                             return transformModel(model, block);
                         } catch (e) {
                             possibleIssues.push(`Error transforming model for ${block.name}: ${e.message}`)
-                            return null
+                            return null!
                         }
                     }).filter(a => a?.elements?.length)
                 }).filter(a => a.length)
