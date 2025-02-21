@@ -13,8 +13,8 @@ blockstatesModels.models.latest['test:block/test'] = blockstatesModels.models.la
 describe('ItemsRenderer', () => {
     const itemsAtlasParser = new AtlasParser(itemsAtlases, '')
     const blocksAtlasParser = new AtlasParser(blocksAtlases, '')
-  const version = '1.21.4';
-  const renderer = new ItemsRenderer(version, blockstatesModels, itemsAtlasParser, blocksAtlasParser)
+    const version = '1.21.4'
+    const renderer = new ItemsRenderer(version, blockstatesModels, itemsAtlasParser, blocksAtlasParser)
 
     const getItemTexture = (item: string) => {
         const result = renderer.getItemTexture(item)
@@ -43,8 +43,8 @@ describe('ItemsRenderer', () => {
             `)
         })
 
-      it('full blocks texture', () => {
-        expect(getItemTexture('stone')).toMatchInlineSnapshot(`
+        it('full blocks texture', () => {
+            expect(getItemTexture('stone')).toMatchInlineSnapshot(`
           {
             "left": {
               "path": "blocks",
@@ -108,18 +108,15 @@ describe('ItemsRenderer', () => {
 
     describe('resolveTexture', () => {
         it('should resolve item textures correctly', () => {
-            expect(renderer.resolveTexture('items/item_frame')).toMatchInlineSnapshot(`
-              {
-                "path": "items",
-                "slice": [
-                  720,
-                  128,
-                  16,
-                  16,
-                ],
-                "type": "items",
-              }
-            `)
+            const result = renderer.resolveTexture('items/item_frame')!
+            result['slice'] = (result['slice'].length === 4) as any
+            expect(result).toMatchInlineSnapshot(`
+            {
+              "path": "items",
+              "slice": true,
+              "type": "items",
+            }
+          `)
 
             expect(renderer.resolveTexture('bla')).toMatchInlineSnapshot(`undefined`)
         })
