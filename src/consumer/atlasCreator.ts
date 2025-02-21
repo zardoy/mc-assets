@@ -1,3 +1,5 @@
+import { createAtlas } from 'apl-image-packer'
+
 export const MAX_CANVAS_SIZE = 16_384
 
     function nextPowerOfTwo(n) {
@@ -63,7 +65,7 @@ export const makeTextureAtlas = (
     json: JsonAtlas
     canvas: HTMLCanvasElement
 } => {
-    // Pre-calculate all texture dimensions first
+    // Pre-calculate all texture dimensions and prepare images
     const texturesWithDimensions = input.map(keyValue => {
         const inputData = getLoadedImage(keyValue)
         let img: HTMLImageElement
@@ -92,37 +94,24 @@ export const makeTextureAtlas = (
             inputData,
             renderWidth,
             renderHeight,
-            area: renderWidth * renderHeight
+            renderSourceWidth: inputData.useOriginalSize ? img.width : inputData.renderSourceWidth ?? Math.min(img.width, img.height),
+            renderSourceHeight: inputData.useOriginalSize ? img.height : inputData.renderSourceHeight ?? Math.min(img.width, img.height),
+            renderSourceStartX: inputData.renderSourceStartX ?? 0,
+            renderSourceStartY: inputData.renderSourceStartY ?? 0,
         }
     })
 
-    // Sort textures by area (largest first) to optimize packing
-    texturesWithDimensions.sort((a, b) => b.area - a.area)
+    // Use apl-image-packer to calculate optimal positions
+    const atlas = createAtlas(texturesWithDimensions.map(tex => ({
+        width: tex.renderWidth,
+        height: tex.renderHeight,
+        data: tex // Store all texture data for later use
+    })))
 
-    // Calculate required atlas size based on actual texture dimensions
-    let requiredWidth = 0
-    let requiredHeight = 0
-    let currentX = 0
-    let currentY = 0
-    let rowHeight = 0
-
-    for (const tex of texturesWithDimensions) {
-        if (currentX + tex.renderWidth > requiredWidth) {
-            currentX = 0
-            currentY += rowHeight
-            rowHeight = tex.renderHeight
-        } else {
-            rowHeight = Math.max(rowHeight, tex.renderHeight)
-        }
-        currentX += tex.renderWidth
-        requiredWidth = Math.max(requiredWidth, currentX)
-        requiredHeight = Math.max(requiredHeight, currentY + rowHeight)
-    }
-
-    // Round up to power of 2 and ensure minimum size
+    // Round up atlas size to power of 2
     const imgSize = Math.max(
-        nextPowerOfTwo(requiredWidth),
-        nextPowerOfTwo(requiredHeight)
+        nextPowerOfTwo(atlas.width),
+        nextPowerOfTwo(atlas.height)
     )
 
     if (imgSize > MAX_CANVAS_SIZE) {
@@ -130,7 +119,7 @@ export const makeTextureAtlas = (
             const key = `${t.renderWidth}x${t.renderHeight}`
             acc[key] = (acc[key] || 0) + 1
             return acc
-        }, {})
+        }, {} as Record<string, number>)
         const sizeGroupsStr = Object.entries(sizeGroups)
             .sort(([,a], [,b]) => b - a)
             .map(([size, count]) => `${size}(${count})`)
@@ -148,56 +137,35 @@ export const makeTextureAtlas = (
     const suSv = tileSize / imgSize
     const tilesPerRow = Math.ceil(imgSize / tileSize)
 
-    let nextX = 0
-    let nextY = 0
-    let rowMaxY = 0
+    // Draw textures at their calculated positions
+    for (const coord of atlas.coords) {
+        const tex = coord.img.data
+        const x = coord.x
+        const y = coord.y
 
-    const goToNextRow = () => {
-        nextX = 0
-        nextY += Math.ceil(rowMaxY / tileSize) * tileSize
-        rowMaxY = 0
-    }
-
-    // Now place textures in the pre-calculated order
-    for (const { keyValue, img, inputData, renderWidth, renderHeight } of texturesWithDimensions) {
-        if (nextX + renderWidth > imgSize) {
-            goToNextRow()
-        }
-
-        // Verify we still have room (sanity check)
-        if (nextY + renderHeight > imgSize) {
-            throw new Error(`Atlas overflow placing ${keyValue} at (${nextX},${nextY}). This shouldn't happen!`)
-        }
-
-        const x = nextX
-        const y = nextY
-
-        const yIndex = y / tileSize
-        const xIndex = x / tileSize
+        const yIndex = Math.floor(y / tileSize)
+        const xIndex = Math.floor(x / tileSize)
         const tileIndex = yIndex * tilesPerRow + xIndex
 
-        nextX += renderWidth
-        rowMaxY = Math.max(rowMaxY, renderHeight)
-
-        const renderSourceDefaultSize = Math.min(img.width, img.height)
-        const renderSourceWidth = inputData.useOriginalSize ? img.width : inputData.renderSourceWidth ?? renderSourceDefaultSize
-        const renderSourceHeight = inputData.useOriginalSize ? img.height : inputData.renderSourceHeight ?? renderSourceDefaultSize
-
-        const sourceStartX = inputData.renderSourceStartX ?? 0
-        const sourceStartY = inputData.renderSourceStartY ?? 0
-        if (sourceStartX + renderSourceWidth > img.width || sourceStartY + renderSourceHeight > img.height) {
-            throw new Error(`Source coordinates (${sourceStartX},${sourceStartY},${renderSourceWidth},${renderSourceHeight}) exceed image bounds (${img.width},${img.height}) for ${keyValue}`)
-        }
-
         try {
-            g.drawImage(img, sourceStartX, sourceStartY, renderSourceWidth, renderSourceHeight, x, y, renderWidth, renderHeight)
+            g.drawImage(
+                tex.img,
+                tex.renderSourceStartX,
+                tex.renderSourceStartY,
+                tex.renderSourceWidth,
+                tex.renderSourceHeight,
+                x,
+                y,
+                tex.renderWidth,
+                tex.renderHeight
+            )
         } catch (err) {
-            throw new Error(`Error drawing ${keyValue}: ${err}`)
+            throw new Error(`Error drawing ${tex.keyValue}: ${err}`)
         }
 
-        const cleanName = keyValue.split('.').slice(0, -1).join('.') || keyValue
-        const su = renderWidth / imgSize
-        const sv = renderHeight / imgSize
+        const cleanName = tex.keyValue.split('.').slice(0, -1).join('.') || tex.keyValue
+        const su = tex.renderWidth / imgSize
+        const sv = tex.renderHeight / imgSize
         texturesIndex[cleanName] = {
             u: x / imgSize,
             v: y / imgSize,
