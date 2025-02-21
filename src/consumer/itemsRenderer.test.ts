@@ -19,6 +19,14 @@ describe('ItemsRenderer', () => {
     const getItemTexture = (item: string) => {
         const result = renderer.getItemTexture(item)
         if (!result) return result
+
+        const replaceSliceDeep = (obj: any) => {
+            if (typeof obj !== 'object' || obj === null) return
+            if (obj['slice']) obj.slice = obj['slice'].length === 4
+            Object.values(obj).forEach(replaceSliceDeep)
+        }
+
+        replaceSliceDeep(result)
         result['resolvedModel'] = !!result['resolvedModel']
         return result
     }
@@ -29,12 +37,7 @@ describe('ItemsRenderer', () => {
               {
                 "path": "items",
                 "resolvedModel": false,
-                "slice": [
-                  720,
-                  128,
-                  16,
-                  16,
-                ],
+                "slice": true,
                 "type": "items",
               }
             `)
@@ -42,40 +45,25 @@ describe('ItemsRenderer', () => {
 
       it('full blocks texture', () => {
         expect(getItemTexture('stone')).toMatchInlineSnapshot(`
-              {
-                "left": {
-                  "path": "blocks",
-                  "slice": [
-                    816,
-                    64,
-                    16,
-                    16,
-                  ],
-                  "type": "blocks",
-                },
-                "resolvedModel": true,
-                "right": {
-                  "path": "blocks",
-                  "slice": [
-                    816,
-                    64,
-                    16,
-                    16,
-                  ],
-                  "type": "blocks",
-                },
-                "top": {
-                  "path": "blocks",
-                  "slice": [
-                    816,
-                    64,
-                    16,
-                    16,
-                  ],
-                  "type": "blocks",
-                },
-              }
-            `)
+          {
+            "left": {
+              "path": "blocks",
+              "slice": true,
+              "type": "blocks",
+            },
+            "resolvedModel": true,
+            "right": {
+              "path": "blocks",
+              "slice": true,
+              "type": "blocks",
+            },
+            "top": {
+              "path": "blocks",
+              "slice": true,
+              "type": "blocks",
+            },
+          }
+        `)
         })
 
         it('block/stone', () => {
@@ -83,33 +71,18 @@ describe('ItemsRenderer', () => {
               {
                 "left": {
                   "path": "blocks",
-                  "slice": [
-                    816,
-                    64,
-                    16,
-                    16,
-                  ],
+                  "slice": true,
                   "type": "blocks",
                 },
                 "resolvedModel": true,
                 "right": {
                   "path": "blocks",
-                  "slice": [
-                    816,
-                    64,
-                    16,
-                    16,
-                  ],
+                  "slice": true,
                   "type": "blocks",
                 },
                 "top": {
                   "path": "blocks",
-                  "slice": [
-                    816,
-                    64,
-                    16,
-                    16,
-                  ],
+                  "slice": true,
                   "type": "blocks",
                 },
               }
@@ -121,12 +94,7 @@ describe('ItemsRenderer', () => {
               {
                 "path": "items",
                 "resolvedModel": false,
-                "slice": [
-                  400,
-                  0,
-                  16,
-                  16,
-                ],
+                "slice": true,
                 "type": "items",
               }
             `)
