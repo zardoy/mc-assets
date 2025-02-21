@@ -1,5 +1,5 @@
 import { VersionedStore } from './versionedStore'
-import { makeTextureAtlas } from './atlasCreator'
+import { makeTextureAtlas, MAX_CANVAS_SIZE } from './atlasCreator'
 import { getLoadedImage } from './utils'
 
 type Texture = {
@@ -155,6 +155,128 @@ export class AtlasParser {
                 return canvas.toDataURL()
             }
         }
+    }
+
+    async createDebugImage(writeNames = false) {
+        const atlas = this.atlas.latest
+        if (atlas.width !== atlas.height) {
+            throw new Error('Atlas must be square')
+        }
+        const wantedSize = Math.min(MAX_CANVAS_SIZE, atlas.width * (writeNames ? 6 : 1))
+        const scale = wantedSize / atlas.width
+        const height = atlas.height * scale;
+        const width = atlas.width * scale;
+        const canvas: HTMLCanvasElement = globalThis.Canvas ? new globalThis.Canvas(width, height) : document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')!
+
+        // Disable image smoothing for pixelated rendering
+        ctx.imageSmoothingEnabled = false
+        // For older browsers
+        //@ts-ignore
+        ctx.webkitImageSmoothingEnabled = false
+        //@ts-ignore
+        ctx.mozImageSmoothingEnabled = false
+        //@ts-ignore
+        ctx.msImageSmoothingEnabled = false
+
+        // Draw the base atlas image
+        const img = await getLoadedImage(this.latestImage)
+        ctx.drawImage(img, 0, 0, atlas.width, atlas.height, 0, 0, width, height)
+
+        // Draw debug rectangles for each texture
+        ctx.strokeStyle = '#ff0000'
+        ctx.lineWidth = 2
+
+        const textureNames = Object.keys(atlas.textures)
+        const totalTextures = textureNames.length
+        let lastProgress = 0
+
+        textureNames.forEach((textureName, i) => {
+            const texture = atlas.textures[textureName]!
+
+            // Log progress every 10%
+            const progress = Math.floor((i / totalTextures) * 100)
+            if (progress >= lastProgress + 10) {
+                console.log(`Processing textures: ${progress}% (${i}/${totalTextures})`)
+                lastProgress = progress
+            }
+
+            const x = texture.u * atlas.width * scale
+            const y = texture.v * atlas.height * scale
+            const width = (texture.su || atlas.suSv) * atlas.width * scale
+            const height = (texture.sv || atlas.suSv) * atlas.height * scale
+
+            // Create striped pattern
+            const pattern = ctx.createPattern((() => {
+                const patternCanvas = globalThis.Canvas ? new globalThis.Canvas(10, 10) : document.createElement('canvas')
+                patternCanvas.width = 10
+                patternCanvas.height = 10
+                const patternCtx = patternCanvas.getContext('2d')!
+                patternCtx.fillStyle = '#ff0000'
+                patternCtx.fillRect(0, 0, 5, 10)
+                patternCtx.fillStyle = '#ffff00'
+                patternCtx.fillRect(5, 0, 5, 10)
+                return patternCanvas
+            })(), 'repeat')!
+
+            ctx.strokeStyle = pattern
+            ctx.strokeRect(x, y, width, height)
+
+            if (writeNames) {
+                // Configure text style
+                const text = textureName
+                const padding = 4
+                const maxWidth = width - padding * 2
+
+                // Start with a relatively large font size and decrease until text fits
+                let fontSize = 12
+                do {
+                    ctx.font = `${fontSize}px monospace`
+                    const metrics = ctx.measureText(text)
+                    if (metrics.width <= maxWidth || fontSize <= 6) {
+                        break
+                    }
+                    fontSize -= 1
+                } while (fontSize > 6)
+
+                ctx.fillStyle = 'white'
+                ctx.strokeStyle = 'black'
+                ctx.lineWidth = Math.max(1, fontSize / 6) // Scale outline with font size
+                ctx.textBaseline = 'top'
+
+                // Draw text with outline for better visibility
+                const textX = x + padding
+                const textY = y + padding
+
+                // Split text into lines if it's still too wide
+                const words = text.split(/(?=[A-Z_/])/g)
+                let line = ''
+                let lines: string[] = []
+                for (const word of words) {
+                    const testLine = line + word
+                    const metrics = ctx.measureText(testLine)
+                    if (metrics.width > maxWidth && line !== '') {
+                        lines.push(line)
+                        line = word
+                    } else {
+                        line = testLine
+                    }
+                }
+                lines.push(line)
+
+                // Draw each line
+                const lineHeight = fontSize * 1.2
+                lines.forEach((line, i) => {
+                    ctx.strokeText(line, textX, textY + i * lineHeight)
+                    ctx.fillText(line, textX, textY + i * lineHeight)
+                })
+            }
+        })
+
+        console.log(`Processing textures: 100% (${totalTextures}/${totalTextures})`)
+        return canvas.toDataURL()
     }
 
     // getTextureBase64(version: string, itemName: string) {

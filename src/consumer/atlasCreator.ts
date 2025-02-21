@@ -1,4 +1,6 @@
-function nextPowerOfTwo(n) {
+export const MAX_CANVAS_SIZE = 16_384
+
+    function nextPowerOfTwo(n) {
     if (n === 0) return 1
     n--
     n |= n >> 1
@@ -61,11 +63,79 @@ export const makeTextureAtlas = (
     json: JsonAtlas
     canvas: HTMLCanvasElement
 } => {
-    const tilesCount = input.length
-    const imgSize = getAtlasSize(tilesCount, tileSize).width
-    const MAX_CANVAS_SIZE = 16_384
+    // Pre-calculate all texture dimensions first
+    const texturesWithDimensions = input.map(keyValue => {
+        const inputData = getLoadedImage(keyValue)
+        let img: HTMLImageElement
+        if (inputData.image) {
+            img = inputData.image
+        } else if (inputData.contents) {
+            img = new Image()
+            img.src = inputData.contents
+        } else {
+            throw new Error('No image or contents')
+        }
+
+        let renderWidth = tileSize * (inputData.tileWidthMult ?? 1)
+        let renderHeight = tileSize
+
+        if (inputData.useOriginalSize || inputData.renderWidth || inputData.renderHeight) {
+            const texWidth = inputData.renderWidth ?? img.width
+            const texHeight = inputData.renderHeight ?? img.height
+            renderWidth = Math.ceil(texWidth / tileSize) * tileSize
+            renderHeight = Math.ceil(texHeight / tileSize) * tileSize
+        }
+
+        return {
+            keyValue,
+            img,
+            inputData,
+            renderWidth,
+            renderHeight,
+            area: renderWidth * renderHeight
+        }
+    })
+
+    // Sort textures by area (largest first) to optimize packing
+    texturesWithDimensions.sort((a, b) => b.area - a.area)
+
+    // Calculate required atlas size based on actual texture dimensions
+    let requiredWidth = 0
+    let requiredHeight = 0
+    let currentX = 0
+    let currentY = 0
+    let rowHeight = 0
+
+    for (const tex of texturesWithDimensions) {
+        if (currentX + tex.renderWidth > requiredWidth) {
+            currentX = 0
+            currentY += rowHeight
+            rowHeight = tex.renderHeight
+        } else {
+            rowHeight = Math.max(rowHeight, tex.renderHeight)
+        }
+        currentX += tex.renderWidth
+        requiredWidth = Math.max(requiredWidth, currentX)
+        requiredHeight = Math.max(requiredHeight, currentY + rowHeight)
+    }
+
+    // Round up to power of 2 and ensure minimum size
+    const imgSize = Math.max(
+        nextPowerOfTwo(requiredWidth),
+        nextPowerOfTwo(requiredHeight)
+    )
+
     if (imgSize > MAX_CANVAS_SIZE) {
-        throw new Error(`Image resolution ${imgSize} is too big, max is ${MAX_CANVAS_SIZE}x${MAX_CANVAS_SIZE}`)
+        const sizeGroups = texturesWithDimensions.reduce((acc, t) => {
+            const key = `${t.renderWidth}x${t.renderHeight}`
+            acc[key] = (acc[key] || 0) + 1
+            return acc
+        }, {})
+        const sizeGroupsStr = Object.entries(sizeGroups)
+            .sort(([,a], [,b]) => b - a)
+            .map(([size, count]) => `${size}(${count})`)
+            .join(', ')
+        throw new Error(`Required atlas size ${imgSize} exceeds maximum ${MAX_CANVAS_SIZE}. Texture sizes: ${sizeGroupsStr}`)
     }
 
     const canvas = getCanvas(imgSize)
@@ -75,6 +145,8 @@ export const makeTextureAtlas = (
     g.imageSmoothingEnabled = false
 
     const texturesIndex = {}
+    const suSv = tileSize / imgSize
+    const tilesPerRow = Math.ceil(imgSize / tileSize)
 
     let nextX = 0
     let nextY = 0
@@ -86,40 +158,15 @@ export const makeTextureAtlas = (
         rowMaxY = 0
     }
 
-    const suSv = tileSize / imgSize
-    const tilesPerRow = Math.ceil(imgSize / tileSize)
-    for (const i in input) {
-        const keyValue = input[i]!
-        const inputData = getLoadedImage(keyValue)
-        let img: HTMLImageElement
-        if (inputData.image) {
-            img = inputData.image
-        } else if (inputData.contents) {
-            img = new Image()
-            img.src = inputData.contents
-        } else {
-            throw new Error('No image or contents')
-        }
-        let su = suSv
-        let sv = suSv
-        let renderWidth = tileSize * (inputData.tileWidthMult ?? 1)
-        let renderHeight = tileSize
-        if (inputData.useOriginalSize || inputData.renderWidth || inputData.renderHeight) {
-            const texWidth = inputData.renderWidth ?? img.width
-            const texHeight = inputData.renderHeight ?? img.height
-            // todo check have enough space
-            renderWidth = Math.ceil(texWidth / tileSize) * tileSize
-            renderHeight = Math.ceil(texHeight / tileSize) * tileSize
-            su = texWidth / imgSize
-            sv = texHeight / imgSize
-            // renderWidth and renderHeight take full tile size so everything is aligned to the grid
-            if (renderHeight > imgSize || renderWidth > imgSize) {
-                throw new Error('Texture ' + keyValue + ' is too big')
-            }
-        }
-
+    // Now place textures in the pre-calculated order
+    for (const { keyValue, img, inputData, renderWidth, renderHeight } of texturesWithDimensions) {
         if (nextX + renderWidth > imgSize) {
             goToNextRow()
+        }
+
+        // Verify we still have room (sanity check)
+        if (nextY + renderHeight > imgSize) {
+            throw new Error(`Atlas overflow placing ${keyValue} at (${nextX},${nextY}). This shouldn't happen!`)
         }
 
         const x = nextX
@@ -131,31 +178,31 @@ export const makeTextureAtlas = (
 
         nextX += renderWidth
         rowMaxY = Math.max(rowMaxY, renderHeight)
-        if (nextX >= imgSize) {
-            goToNextRow()
-        }
 
         const renderSourceDefaultSize = Math.min(img.width, img.height)
         const renderSourceWidth = inputData.useOriginalSize ? img.width : inputData.renderSourceWidth ?? renderSourceDefaultSize
         const renderSourceHeight = inputData.useOriginalSize ? img.height : inputData.renderSourceHeight ?? renderSourceDefaultSize
+
+        const sourceStartX = inputData.renderSourceStartX ?? 0
+        const sourceStartY = inputData.renderSourceStartY ?? 0
+        if (sourceStartX + renderSourceWidth > img.width || sourceStartY + renderSourceHeight > img.height) {
+            throw new Error(`Source coordinates (${sourceStartX},${sourceStartY},${renderSourceWidth},${renderSourceHeight}) exceed image bounds (${img.width},${img.height}) for ${keyValue}`)
+        }
+
         try {
-            g.drawImage(img, inputData.renderSourceStartX ?? 0, inputData.renderSourceStartY ?? 0, renderSourceWidth, renderSourceHeight, x, y, renderWidth, renderHeight)
+            g.drawImage(img, sourceStartX, sourceStartY, renderSourceWidth, renderSourceHeight, x, y, renderWidth, renderHeight)
         } catch (err) {
             throw new Error(`Error drawing ${keyValue}: ${err}`)
         }
 
-        // remove the extension eg .png
         const cleanName = keyValue.split('.').slice(0, -1).join('.') || keyValue
+        const su = renderWidth / imgSize
+        const sv = renderHeight / imgSize
         texturesIndex[cleanName] = {
             u: x / imgSize,
             v: y / imgSize,
             tileIndex,
-            ...su == suSv && sv == suSv ? {} : {
-                su,
-                sv,
-                // width: renderWidth,
-                // height: renderHeight
-            }
+            ...su == suSv && sv == suSv ? {} : { su, sv }
         }
     }
 
