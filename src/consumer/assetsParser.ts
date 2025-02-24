@@ -140,7 +140,7 @@ export class AssetsParser {
         }
         if (!applyModels.length) {
             if (!stateMatched) {
-                const blockstatesCount = Object.keys(states ?? {}).length;
+                const blockstatesCount = Object.keys(states ?? {}).length
                 if (blockstatesCount) {
                     this.issues.push(`Block did not match any possible state (${blockstatesCount} possible states)`)
                 } else {
@@ -208,13 +208,6 @@ export class AssetsParser {
         collectModels(modelData)
         collectedParentModels.reverse() // from parent to child
         for (const model of collectedParentModels) {
-            if (model.ambientocclusion !== undefined) {
-                this.resolvedModel.ao = model.ambientocclusion
-            }
-            if (model.ao !== undefined) {
-                this.resolvedModel.ao = model.ao
-            }
-
             if (model.textures) {
                 this.resolvedModel.textures ??= {}
                 for (let [key, value] of Object.entries(model.textures)) {
@@ -231,6 +224,12 @@ export class AssetsParser {
 
             if (model.elements) {
                 this.resolvedModel.elements = structuredClone(model.elements)
+            }
+
+            for (const [key, value] of Object.entries(model)) {
+                if (typeof value === 'boolean') {
+                    this.resolvedModel[key] = value
+                }
             }
         }
 
