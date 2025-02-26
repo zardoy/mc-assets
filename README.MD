@@ -10,11 +10,11 @@ npm i mc-assets
 
 ## Features
 
-- **NEW ITEMS FORMAT SUPPORT!!!** - Get different item models based on conditions (using item, display context, etc)
 - **Automatic Updates** - This library is automatically updated and published to npm.
 - **Fully Typed** - Today is nothing can be done without TypeScript. We ship best type definitions possible.
 - **Early Access** - It always includes the latest pre and rc (release candidate) version.
-- **Version Accurate** - Includes all released versions starting from 1.7.10.
+- **Version Accurate** - Includes data for **all released versions** starting from 1.7.10.
+- **New Items Format Support** - Get different item models based on conditions (using item, display context, etc)
 - **Memory Efficient** - Small installation size, for the fastest download & loading time.
 - **Simple & Complete API** - Works in browsers out of the box and provides parsers for all the data this library provides.
 - **Easy to Use Items Textures** - Includes hand-crafted isometric textures for some blocks.
