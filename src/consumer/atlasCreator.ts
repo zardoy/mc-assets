@@ -1,8 +1,8 @@
-import { createAtlas } from 'apl-image-packer'
+import { MaxRectsPacker, PACKING_LOGIC, Rectangle } from 'maxrects-packer'
 
 export const MAX_CANVAS_SIZE = 16_384
 
-    function nextPowerOfTwo(n) {
+function nextPowerOfTwo(n) {
     if (n === 0) return 1
     n--
     n |= n >> 1
@@ -66,7 +66,7 @@ export const makeTextureAtlas = (
     canvas: HTMLCanvasElement
 } => {
     // Pre-calculate all texture dimensions and prepare images
-    const texturesWithDimensions = input.map(keyValue => {
+    const texturesWithDimensions = [...new Set(input)].map(keyValue => {
         const inputData = getLoadedImage(keyValue)
         let img: HTMLImageElement
         if (inputData.image) {
@@ -101,12 +101,50 @@ export const makeTextureAtlas = (
         }
     })
 
-    // Use apl-image-packer to calculate optimal positions
-    const atlas = createAtlas(texturesWithDimensions.map(tex => ({
-        width: tex.renderWidth,
-        height: tex.renderHeight,
-        data: tex // Store all texture data for later use
-    })))
+    // Use MaxRectsPacker to calculate optimal positions
+    const packer = new MaxRectsPacker(undefined, undefined, 0, {
+        square: true,
+        smart: true,
+        pot: true,
+        logic: PACKING_LOGIC.MAX_AREA,
+    })
+
+    // Add all textures as rectangles
+    const rectangles = texturesWithDimensions.map(tex => {
+        const rect = new Rectangle(tex.renderWidth, tex.renderHeight)
+        rect.data = tex // Store texture data for later use
+        return rect
+    })
+    packer.addArray(rectangles)
+
+    const firstBin = packer.bins[0]
+    if (!firstBin || !firstBin.rects || !firstBin.rects.length) {
+        throw new Error('Failed to pack textures')
+    }
+
+    const atlas = {
+        width: firstBin.width,
+        height: firstBin.height,
+        coords: firstBin.rects.map(rect => ({
+            x: rect.x,
+            y: rect.y,
+            img: { data: rect.data }
+        }))
+    }
+
+    // Check for duplicate keyValues in atlas
+    const seenKeyValues = new Set<string>()
+    for (const coord of atlas.coords) {
+        const tex = coord.img.data
+        if (seenKeyValues.has(tex.keyValue)) {
+            throw new Error(`Duplicate texture keyValue found in atlas: ${tex.keyValue}`)
+        }
+        seenKeyValues.add(tex.keyValue)
+    }
+
+    if (seenKeyValues.size !== input.length) {
+        throw new Error(`Lost some textures in packing: ${input.length - seenKeyValues.size}`)
+    }
 
     // Round up atlas size to power of 2
     const imgSize = Math.max(
@@ -121,7 +159,7 @@ export const makeTextureAtlas = (
             return acc
         }, {} as Record<string, number>)
         const sizeGroupsStr = Object.entries(sizeGroups)
-            .sort(([,a], [,b]) => b - a)
+            .sort(([, a], [, b]) => b - a)
             .map(([size, count]) => `${size}(${count})`)
             .join(', ')
         throw new Error(`Required atlas size ${imgSize} exceeds maximum ${MAX_CANVAS_SIZE}. Texture sizes: ${sizeGroupsStr}`)
