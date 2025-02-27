@@ -1,9 +1,9 @@
-import worldBlockProvider from '../consumer/worldBlockProvider';
+import worldBlockProvider from '../consumer/worldBlockProvider'
 
 //@ts-ignore
-import blockstatesModels from '../../dist/blockStatesModels.json';
+import blockstatesModels from '../../dist/blockStatesModels.json'
 //@ts-ignore
-import blocksAtlas from '../../dist/blocksAtlases.json';
+import blocksAtlas from '../../dist/blocksAtlases.json'
 
 const blocksProvider = worldBlockProvider(blockstatesModels, blocksAtlas, 'latest')
 

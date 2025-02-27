@@ -227,7 +227,7 @@ export class AssetsParser {
             }
 
             for (const [key, value] of Object.entries(model)) {
-                if (typeof value === 'boolean') {
+                if (key !== 'elements' && key !== 'textures' && key !== 'parent') {
                     this.resolvedModel[key] = value
                 }
             }
