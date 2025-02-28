@@ -174,11 +174,16 @@ export class AssetsParser {
         return modelsResolved // todo figure out the type error
     }
 
+    private getModelData(model: string) {
+        const modelData = this.blockModelsStore.get(this.version, model)
+        return modelData && typeof modelData === 'object' ? structuredClone(modelData) : modelData
+    }
+
     public getResolvedModelsByModel(model: string, debugQueryName?: string, clearModel = true) {
         if (clearModel) {
             this.resolvedModel = {}
         }
-        const modelData = this.blockModelsStore.get(this.version, model)
+        const modelData = this.getModelData(model)
         if (!modelData) {
             this.issues.push(`Model ${model} not found. Ensure it is present in assets/${getNamespace(model)}/models/${model}.json`)
             return
@@ -196,7 +201,7 @@ export class AssetsParser {
             collectedParentModels.push(model)
 
             if (model.parent) {
-                const parent = this.blockModelsStore.get(this.version, model.parent)
+                const parent = this.getModelData(model.parent)
                 if (!parent) {
                     this.issues.push(`Parent model ${model.parent} not found for ${debugQueryName}`)
                     return
@@ -223,7 +228,7 @@ export class AssetsParser {
             }
 
             if (model.elements) {
-                this.resolvedModel.elements = structuredClone(model.elements)
+                this.resolvedModel.elements = model.elements
             }
 
             for (const [key, value] of Object.entries(model)) {
