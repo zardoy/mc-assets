@@ -175,8 +175,8 @@ export class AssetsParser {
     }
 
     private getModelData(model: string) {
-        const modelData = this.blockModelsStore.get(this.version, model)
-        return modelData && typeof modelData === 'object' ? structuredClone(modelData) : modelData
+        const modelData = this.blockModelsStore.get(this.version, model.replace('minecraft:', ''))
+        return modelData
     }
 
     public getResolvedModelsByModel(model: string, debugQueryName?: string, clearModel = true) {

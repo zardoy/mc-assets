@@ -16,14 +16,14 @@ export class VersionedStore<T = string> {
         }
     }
 
-    get versionsSorted () {
+    get versionsSorted() {
         const versions = Object.keys(this.data).filter(x => x !== 'latest').sort((a, b) => this.semverToNumber(a) - this.semverToNumber(b))
         if (!this.strictVersioned) versions.push('latest')
         return versions
     }
 
     /** The order is important: from newest to oldest */
-    push (version: string, key: string, data: T) {
+    push(version: string, key: string, data: T) {
         this.currentVersion ||= version
         if (this.currentVersion !== version) {
             if (this.strictVersioned) {
@@ -48,7 +48,7 @@ export class VersionedStore<T = string> {
         }
     }
 
-    get (version: string, key: string, inclusive = this.inclusive) {
+    get(version: string, key: string, inclusive = this.inclusive) {
         const verNum = this.semverToNumber(version)
         let firstNextVersion
         for (const ver of this.versionsSorted) {
@@ -57,21 +57,22 @@ export class VersionedStore<T = string> {
                 break
             }
         }
+        let result
         if (this.strictVersioned) {
-            return this.data[firstNextVersion]?.[key]
+            result = this.data[firstNextVersion]?.[key]
         } else {
-            if (this.data[firstNextVersion]?.[key]) return this.data[firstNextVersion]![key]
-            if (this.data.latest[key]) return this.data.latest[key]
+            if (this.data[firstNextVersion]?.[key]) result = this.data[firstNextVersion]![key]
+            else if (this.data.latest[key]) result = this.data.latest[key]
         }
-        return
+        return result && typeof result === 'object' ? structuredClone(result) : result
     }
 
-    semverToNumber (version: string) {
+    semverToNumber(version: string) {
         const [x, y = '0', z = '0'] = version.split('.')
         return +`${x!.padStart(2, '0')}${y.padStart(2, '0')}${z.padStart(2, '0')}`
     }
 
-    loadData (data: typeof this.data) {
+    loadData(data: typeof this.data) {
         this.data = data
     }
 }
