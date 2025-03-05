@@ -17,6 +17,18 @@ const existingPaths = {
     blockModels: dataPaths.latest['models/'],
 }
 
+// Remove entries from previous versions that are in custom blockentities
+const removeFromPreviousVersions = (name: string, type: keyof typeof customData) => {
+    for (const version in dataPaths) {
+        // if (version === 'latest') continue
+        const versionData = dataPaths[version]
+        const typePath = type === 'blockStates' ? 'blockstates/' : 'models/'
+        if (versionData[typePath] && versionData[typePath][name]) {
+            delete versionData[typePath][name]
+        }
+    }
+}
+
 for (const key in existingPaths.blockStates) {
     const value = existingPaths.blockStates[key]
     if (value.includes('./custom/blockentities/')) {
@@ -54,12 +66,13 @@ for (const version of customModelsVersions) {
                 }
                 customData[type][version]![nameClean] = true
                 existingPaths[type][nameClean] = undefined
-                // TODO drop existing for all versions
                 const refNameRaw = filePath.slice(filePath.indexOf(type) + type.length + 1);
                 let refName = type === 'blockModels'
-                    ? refNameRaw.startsWith('block/') ? refNameRaw : `block/${refNameRaw}` // e.g. block/sign/oak_sign // e.g. block/sign/oak_sign
-                    : nameClean // e.g. oak_sign (just block name) // e.g. oak_sign (just block name) // e.g. oak_sign (just block name)
-                if (!refName.endsWith('.json')) refName += '.json'
+                    ? refNameRaw.startsWith('block/') ? refNameRaw : `block/${refNameRaw}` // e.g. block/sign/oak_sign
+                    : nameClean // e.g. oak_sign (just block name)
+                    if (!refName.endsWith('.json')) refName += '.json'
+                // Remove from previous versions
+                removeFromPreviousVersions(refName, type)
                 existingPaths[type][`${refName}`] = `../${filePath}`
             }
         }

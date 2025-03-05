@@ -1,7 +1,7 @@
 {
     "parent": "block/block",
     "textures": {
-        "particle": "#particle"
+        "particle": "block/birch_planks"
     },
     "elements": [
         {
