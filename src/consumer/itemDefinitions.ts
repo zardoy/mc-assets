@@ -85,7 +85,7 @@ const resolveModel = (
         case 'minecraft:range_dispatch': {
             const value = getPropertyValue(model.property, model.source, model.target, properties)
             if (typeof value !== 'number') {
-                return resolveModel(model.fallback, properties)
+                return resolveModel(model.fallback ?? model.entries[0].model, properties)
             }
 
             const scaledValue = model.scale ? value * model.scale : value
