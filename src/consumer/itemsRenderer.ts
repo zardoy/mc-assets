@@ -17,6 +17,9 @@ export class ItemsRenderer {
     }
 
     resolveTexture(texture: string) {
+        if (texture.startsWith('minecraft:')) {
+            texture = texture.slice('minecraft:'.length)
+        }
         const type = texture.includes('items/') ? 'items' : (texture.includes('block/') || texture.includes('blocks/')) ? 'blocks' : 'items'
         const atlasParser = type === 'blocks' ? this.blocksAtlasParser! : this.itemsAtlasParser
         const textureInfo = atlasParser.getTextureInfo(texture.replace('block/', '').replace('blocks/', '').replace('item/', '').replace('items/', ''), this.version)!
