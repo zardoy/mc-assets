@@ -98,11 +98,11 @@ export const generateItemsAtlases = async () => {
       delete data[modelName]
     }
   }
-  const validateItemModel = (model: ItemModel, name: string, allModels) => {
+  const possiblyReplaceInvsprite = (model: ItemModel, name: string, allModels) => {
     if (validated.has(name)) return
     validated.add(name)
-    if (model.parent) {
-      const invspriteName = name.replace('item/', '')
+    const invspriteName = name.replace('item/', '')
+    if (model.parent || legacyInvsprite[invspriteName]) {
       if (legacyInvsprite[invspriteName]) {
         usedInvsprite.push(invspriteName)
         const textureKey = `invsprite_${invspriteName}`
@@ -113,13 +113,13 @@ export const generateItemsAtlases = async () => {
           }
         }
         removeLegacyModels(name)
-      } else if ((model.parent.startsWith('block/') || (isGeneratedModelName(model.parent) && modelHasNoTextures(model))) && !isCube(invspriteName)) {
-        console.warn('parent block model', invspriteName, 'of', name, 'is not a cube and no invsprite found')
-      } else if (!isGeneratedModelName(model.parent)) {
+      } else if (model.parent && (model.parent.startsWith('block/') || (isGeneratedModelName(model.parent) && modelHasNoTextures(model))) && !isCube(invspriteName)) {
+        // console.warn('parent block model', invspriteName, 'of', name, 'is not a cube and no invsprite found')
+      } else if (model.parent && !isGeneratedModelName(model.parent)) {
         if (!latestModels[model.parent]) {
           throw new Error(`parent item model ${model.parent} not found`)
         }
-        validateItemModel(allModels[model.parent], model.parent, allModels)
+        possiblyReplaceInvsprite(allModels[model.parent], model.parent, allModels)
       }
 
     }
@@ -142,7 +142,7 @@ export const generateItemsAtlases = async () => {
 
   for (const [name, model] of Object.entries(latestModels)) {
     if (!name.startsWith('item/')) continue
-    validateItemModel(model, name, latestModels)
+    possiblyReplaceInvsprite(model, name, latestModels)
   }
 
   const createItemsAtlas = (key: string, textures: Record<string, string>) => {

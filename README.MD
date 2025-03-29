@@ -13,12 +13,11 @@ npm i mc-assets
 - **Automatic Updates** - This library is automatically updated and published to npm.
 - **Fully Typed** - Today is nothing can be done without TypeScript. We ship best type definitions possible.
 - **Early Access** - It always includes the latest pre and rc (release candidate) version.
-- **Version Accurate** - Includes data for **all released versions** starting from 1.7.10.
+- **Version Accurate** - Includes data for **all released versions** starting from 1.7.10 (models from 1.13.0 post-flattening).
+- **Block Entities Models** - Includes community-crafted models for block entities.
 - **New Items Format Support** - Get different item models based on conditions (using item, display context, etc)
 - **Memory Efficient** - Small installation size, for the fastest download & loading time.
 - **Simple & Complete API** - Works in browsers out of the box and provides parsers for all the data this library provides.
-- **Easy to Use Items Textures** - Includes hand-crafted isometric textures for some blocks.
-- **Block Entities Models** - Includes community-crafted models for block entities.
 
 This module was originally designed as standalone package for [https://mcraft.fun](mcraft.fun) ([repo](https://github.com/zardoy/minecraft-web-client/)) project so it is easier to maintain, but now it became a library that I think can cover any use case where you need to work with minecraft assets. This library means block states, models data and texture contents, it doesn't cover minecraft-data use cases. With the best block model parser you can build your own renderers, editors, etc.
 
