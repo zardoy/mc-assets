@@ -90,7 +90,7 @@ describe('ItemsRenderer', () => {
         })
 
         it('invsprite textures', () => {
-            expect(getItemTexture('chest')).toMatchInlineSnapshot(`
+            expect(getItemTexture('black_banner')).toMatchInlineSnapshot(`
               {
                 "path": "items",
                 "resolvedModel": false,
