@@ -16,8 +16,8 @@ describe('ItemsRenderer', () => {
     const version = '1.21.4'
     const renderer = new ItemsRenderer(version, blockstatesModels, itemsAtlasParser, blocksAtlasParser)
 
-    const getItemTexture = (item: string) => {
-        const result = renderer.getItemTexture(item)
+    const getItemTexture = (item: string, onlyBlockModel = false) => {
+        const result = renderer.getItemTexture(item, undefined, undefined, onlyBlockModel)
         if (!result) return result
 
         const replaceSliceDeep = (obj: any) => {
@@ -26,6 +26,13 @@ describe('ItemsRenderer', () => {
             Object.values(obj).forEach(replaceSliceDeep)
         }
 
+        if (onlyBlockModel) {
+            delete result['top']
+            delete result['bottom']
+            delete result['right']
+            delete result['left']
+            result['textures'] = result['resolvedModel']['textures']
+        }
         replaceSliceDeep(result)
         result['resolvedModel'] = !!result['resolvedModel']
         return result
@@ -96,6 +103,19 @@ describe('ItemsRenderer', () => {
                 "resolvedModel": false,
                 "slice": true,
                 "type": "items",
+              }
+            `)
+        })
+
+        it('chest', () => {
+            expect(getItemTexture('chest')).toMatchInlineSnapshot(`undefined`)
+            expect(getItemTexture('chest', true)).toMatchInlineSnapshot(`
+              {
+                "resolvedModel": true,
+                "textures": {
+                  "chest": "block/entity/chest/normal",
+                  "particle": "block/birch_planks",
+                },
               }
             `)
         })

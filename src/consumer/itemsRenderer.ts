@@ -97,13 +97,35 @@ export class ItemsRenderer {
         let model: ItemModel | undefined
         {
             model = resolveModel(cleanFullModelPath)
-            if (!exactItemResolve) {
-                model ??= resolveModel(itemModelPath)
+            if (!exactItemResolve && !model) {
+                // todo resolve deep!
+                const itemModel = resolveModel(itemModelPath)
+                if (itemModel && itemModel.textures?.layer0) {
+                    model = itemModel
+                }
             }
             let blockModel = model?.parent?.includes('block/')
             if (!model) {
-                model = resolveModel(blockModelPath)
-                if (model) blockModel = true
+                if (onlyResolveBlockModel && !namespace) {
+                    const [resolvedModel] = this.assetsParser.getResolvedModelFirst({ name: name, properties: {} }, true) ?? []
+                    if (resolvedModel) {
+                        return {
+                            resolvedModel,
+                            get top(): string {
+                                throw new Error('Was called with onlyResolveBlockModel = true')
+                            },
+                            get left(): string {
+                                throw new Error('Was called with onlyResolveBlockModel = true')
+                            },
+                            get right(): string {
+                                throw new Error('Was called with onlyResolveBlockModel = true')
+                            }
+                        }
+                    }
+                } else {
+                    model = resolveModel(blockModelPath)
+                    if (model) blockModel = true
+                }
             }
             if (blockModel || model?.elements) {
                 return onlyResolveBlockModel ? this.resolveBlockModel(model, cleanFullModelPath) : this.tryGetFullBlock(model, cleanFullModelPath)
