@@ -48,7 +48,7 @@ export class VersionedStore<T = string> {
         }
     }
 
-    get(version: string, key: string, inclusive = this.inclusive) {
+    get(version: string, key: string, inclusive = this.inclusive): T | undefined {
         const verNum = this.semverToNumber(version)
         let firstNextVersion
         for (const ver of this.versionsSorted) {
