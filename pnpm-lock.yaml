@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       maxrects-packer:
-        specifier: '@zardoy/maxrects-packer'
-        version: link:@zardoy/maxrects-packer
+        specifier: npm:@zardoy/maxrects-packer
+        version: '@zardoy/maxrects-packer@2.7.4'
       zod:
         specifier: ^3.24.1
         version: 3.24.1
@@ -668,6 +668,9 @@ packages:
     engines: {node: '>=16'}
     peerDependencies:
       yauzl: ^2.10.0
+
+  '@zardoy/maxrects-packer@2.7.4':
+    resolution: {integrity: sha512-ZIDcSdtSg6EhKFxGYWCcTnA/0YVbpixBL+psUS6ncw4IvdDF5hWauMU3XeCfYwrT/88QFgAq/Pafxt+P9OJyoQ==}
 
   '@zardoy/react-util@0.2.5':
     resolution: {integrity: sha512-piZ4Ar+V/Mkq+I2kdtpVBT8ArnRvxx2pL+A7vxuoOtk9TCrAhiFwF8PYoC1DXZorrcmBg8vQ3xIItNYpDYKX3g==}
@@ -2695,6 +2698,8 @@ snapshots:
     dependencies:
       '@types/yauzl': 2.10.3
       yauzl: 2.10.0
+
+  '@zardoy/maxrects-packer@2.7.4': {}
 
   '@zardoy/react-util@0.2.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
