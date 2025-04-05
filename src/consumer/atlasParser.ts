@@ -1,5 +1,5 @@
 import { VersionedStore } from './versionedStore'
-import { makeTextureAtlas, MAX_CANVAS_SIZE } from './atlasCreator'
+import { AtlasCreatorOptions, makeTextureAtlas, MAX_CANVAS_SIZE } from './atlasCreator'
 import { getLoadedImage } from './utils'
 
 type Texture = {
@@ -67,13 +67,20 @@ export class AtlasParser {
             ...info,
             su: info?.su ?? defaultSuSv,
             sv: info?.sv ?? defaultSuSv,
+            /** @deprecated */
             getLoadedImage: async () => {
                 return await getLoadedImage(info.imageType === 'latest' ? this.latestImage : this.legacyImage!)
-            }
+            },
+            getLoadedAtlasImage: async () => {
+                return await getLoadedImage(info.imageType === 'latest' ? this.latestImage : this.legacyImage!)
+            },
         }
     }
 
-    async makeNewAtlas(version: string, getCustomImage?: (itemName: string) => DataUrl | HTMLImageElement | boolean | void, _unusedTileSize = this.atlas.latest.tileSize, getTextureSortRankOrTopTextures?: string[] | ((key: string) => number), addTextures = [] as string[]) {
+    // getRenderedFullBlockSide(resolvedModel: ResolvedBlockModel, side: 'top' | 'bottom' | 'north' | 'south' | 'east' | 'west') {
+    // }
+
+    async makeNewAtlas(version: string, getCustomImage?: (itemName: string) => DataUrl | HTMLImageElement | boolean | void, _unusedTileSize = this.atlas.latest.tileSize, getTextureSortRankOrTopTextures?: string[] | ((key: string) => number), addTextures = [] as string[], options: Pick<AtlasCreatorOptions, 'needHorizontalIndexes' | 'getCanvas'> = {}) {
         const itemsAtlases = this.atlasJson as ItemsAtlases
         type CoordsAndImage = {
             u: number
@@ -139,6 +146,7 @@ export class AtlasParser {
                 }
             },
             tileSize: this.atlas.latest.tileSize,
+            ...options,
         })
 
         let _newAtlasParser: AtlasParser | undefined

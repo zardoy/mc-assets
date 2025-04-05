@@ -1,3 +1,4 @@
+//@ts-ignore
 import { MaxRectsPacker, PACKING_LOGIC, Rectangle } from 'maxrects-packer'
 
 export const MAX_CANVAS_SIZE = 16_384
@@ -49,7 +50,7 @@ export type AtlasCreatorOptions = {
         renderSourceWidth?: number
         renderSourceHeight?: number
     }
-    format?: 'uv' | 'index'
+    needHorizontalIndexes?: boolean
     tileSize?: number
     getCanvas?: (imgSize: number) => HTMLCanvasElement
 }
@@ -60,6 +61,7 @@ export const makeTextureAtlas = (
         getLoadedImage,
         tileSize = 16,
         getCanvas = (imgSize) => typeof document !== 'undefined' && document.createElement ? document.createElement('canvas') : new globalThis.Canvas(imgSize, imgSize, 'png' as any),
+        needHorizontalIndexes = false,
     }: AtlasCreatorOptions
 ): {
     json: JsonAtlas
@@ -104,9 +106,10 @@ export const makeTextureAtlas = (
     // Use MaxRectsPacker to calculate optimal positions
     const packer = new MaxRectsPacker(undefined, undefined, 0, {
         square: true,
-        smart: true,
         pot: true,
-        logic: PACKING_LOGIC.MAX_AREA,
+        ...needHorizontalIndexes ? {} : { smart: true },
+        logic: needHorizontalIndexes ? PACKING_LOGIC.FILL_WIDTH : PACKING_LOGIC.MAX_AREA,
+        // logic: PACKING_LOGIC.FILL_WIDTH,
     })
 
     // Add all textures as rectangles

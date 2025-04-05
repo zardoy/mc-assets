@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       maxrects-packer:
-        specifier: ^2.7.3
-        version: 2.7.3
+        specifier: file:./temp-lib/zardoy-maxrects-packer-2.7.4.tgz
+        version: '@zardoy/maxrects-packer@file:temp-lib/zardoy-maxrects-packer-2.7.4.tgz'
       zod:
         specifier: ^3.24.1
         version: 3.24.1
@@ -668,6 +668,10 @@ packages:
     engines: {node: '>=16'}
     peerDependencies:
       yauzl: ^2.10.0
+
+  '@zardoy/maxrects-packer@file:temp-lib/zardoy-maxrects-packer-2.7.4.tgz':
+    resolution: {integrity: sha512-6x/zqYLfmQvH8kavweEqcqKIH+xSqGCzwTWkFcnLwCFVXQhJjc9iAb99RdG74eyP5373VFjcAiMkqSq5DCXtnQ==, tarball: file:temp-lib/zardoy-maxrects-packer-2.7.4.tgz}
+    version: 2.7.4
 
   '@zardoy/react-util@0.2.5':
     resolution: {integrity: sha512-piZ4Ar+V/Mkq+I2kdtpVBT8ArnRvxx2pL+A7vxuoOtk9TCrAhiFwF8PYoC1DXZorrcmBg8vQ3xIItNYpDYKX3g==}
@@ -1414,9 +1418,6 @@ packages:
   make-dir@1.3.0:
     resolution: {integrity: sha512-2w31R7SJtieJJnQtGc7RVL2StM2vGYVfqUOvUDxH6bC6aJTxPxTF0GnIgCyu7tjockiUWAYQRbxa7vKn34s5sQ==}
     engines: {node: '>=4'}
-
-  maxrects-packer@2.7.3:
-    resolution: {integrity: sha512-bG6qXujJ1QgttZVIH4WDanhoJtvbud/xP/XPyf6A69C9RdA61BM4TomFALCq2nrTa+tARRIBB4LuIFsnUQU2wA==}
 
   merge-stream@2.0.0:
     resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}
@@ -2699,6 +2700,8 @@ snapshots:
       '@types/yauzl': 2.10.3
       yauzl: 2.10.0
 
+  '@zardoy/maxrects-packer@file:temp-lib/zardoy-maxrects-packer-2.7.4.tgz': {}
+
   '@zardoy/react-util@0.2.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       classnames: 2.5.1
@@ -3537,8 +3540,6 @@ snapshots:
   make-dir@1.3.0:
     dependencies:
       pify: 3.0.0
-
-  maxrects-packer@2.7.3: {}
 
   merge-stream@2.0.0: {}
 

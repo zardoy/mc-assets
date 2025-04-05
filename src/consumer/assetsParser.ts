@@ -1,5 +1,5 @@
 import { BlockModelsStore, BlockStatesStore } from './stores'
-import { BlockApplyModel, BlockElementPos, BlockModel, BlockStateConditions, ItemModel } from './types'
+import { BlockApplyModel, BlockElementPos, BlockModel, BlockStateConditions, ItemModel, ResolvedBlockModel } from './types'
 
 export interface QueriedBlock {
     stateId: number
@@ -56,8 +56,9 @@ export class AssetsParser {
         return elementsOptimized
     }
 
-    // looks like workaround
-    private resolvedModel: Pick<BlockModel, 'textures' | 'ao' | 'elements'> & { x?: number, y?: number, z?: number, uvlock?: boolean, weight?: number } = {}
+    private resolvedModel: ResolvedBlockModel = {
+        modelName: ''
+    }
 
     public issues: string[] = []
     public matchedModels: string[] = []
@@ -149,7 +150,7 @@ export class AssetsParser {
             }
             return
         }
-        const modelsResolved = [] as typeof this.resolvedModel[][]
+        const modelsResolved = [] as ResolvedBlockModel[][]
         let part = 0
         for (const model of applyModels) {
             part++
@@ -158,6 +159,7 @@ export class AssetsParser {
             for (const varModel of Array.isArray(model) ? model : [model]) {
                 variant++
                 this.resolvedModel = {
+                    modelName: varModel.model ?? queriedBlock.name,
                     x: varModel.x,
                     y: varModel.y,
                     z: varModel.z,
@@ -171,7 +173,7 @@ export class AssetsParser {
                 if (!multiOptim && modelsResolved[modelsResolved.length - 1]!.length > 0) break
             }
         }
-        return modelsResolved // todo figure out the type error
+        return modelsResolved
     }
 
     private getModelData(model: string) {
@@ -181,7 +183,9 @@ export class AssetsParser {
 
     public getResolvedModelsByModel(model: string, debugQueryName?: string, clearModel = true) {
         if (clearModel) {
-            this.resolvedModel = {}
+            this.resolvedModel = {
+                modelName: this.resolvedModel.modelName
+            }
         }
         const modelData = this.getModelData(model)
         if (!modelData) {
@@ -194,7 +198,9 @@ export class AssetsParser {
 
     public getResolvedModelsByModelData(modelData: BlockModel, debugQueryName?: string, clearModel = true) {
         if (clearModel) {
-            this.resolvedModel = {}
+            this.resolvedModel = {
+                modelName: this.resolvedModel.modelName
+            }
         }
         const collectedParentModels = [] as BlockModel[]
         const collectModels = (model: BlockModel) => {

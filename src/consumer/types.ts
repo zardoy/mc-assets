@@ -67,6 +67,15 @@ export type BlockModel = {
     ao?: boolean
 }
 
+export type ResolvedBlockModel = Pick<BlockModel, 'textures' | 'elements' | 'ao'> & {
+    modelName: string
+    x?: number
+    y?: number
+    z?: number
+    uvlock?: boolean
+    weight?: number
+}
+
 type DisplayPresentation = {
     rotation?: [number, number, number]
     translation?: [number, number, number]
