@@ -25,7 +25,8 @@ blockstatesModels.blockstates.latest['errored'] = {
 }
 const texturesAddFirst = {
     'unknown': '../custom/missing_texture.png',
-    'errored': '../custom/errored_texture.png'
+    'errored': '../custom/errored_texture.png',
+    'end_portal_top': '../custom/textures/end_portal_top.png'
 }
 const texturesAddLast = {}
 blockstatesModels.models.latest['block/unknown'] = {
