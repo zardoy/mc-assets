@@ -7,6 +7,7 @@ export const versionToNumber = (ver: string) => {
 
 export const getLoadedImage = async (url: string) => {
     const img = new Image()
+    img.crossOrigin = 'anonymous'
     img.src = url
     if (img.complete) {
         return img
