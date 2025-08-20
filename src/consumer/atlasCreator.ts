@@ -39,7 +39,7 @@ export type AtlasCreatorOptions = {
     input: string[]
     getLoadedImage: (name) => {
         contents?: string
-        image?: HTMLImageElement
+        image?: HTMLImageElement | HTMLCanvasElement
         tileWidthMult?: number
 
         useOriginalSize?: boolean
@@ -70,7 +70,7 @@ export const makeTextureAtlas = (
     // Pre-calculate all texture dimensions and prepare images
     const texturesWithDimensions = [...new Set(input)].map(keyValue => {
         const inputData = getLoadedImage(keyValue)
-        let img: HTMLImageElement
+        let img: HTMLImageElement | HTMLCanvasElement
         if (inputData.image) {
             img = inputData.image
         } else if (inputData.contents) {
@@ -180,7 +180,7 @@ export const makeTextureAtlas = (
 
     // Draw textures at their calculated positions
     for (const coord of atlas.coords) {
-        const tex = coord.img.data
+        const tex = coord.img.data as typeof texturesWithDimensions[number]
         const x = coord.x
         const y = coord.y
 

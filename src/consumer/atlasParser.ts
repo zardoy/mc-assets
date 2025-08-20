@@ -26,11 +26,26 @@ interface ItemsAtlases {
     legacy?: ItemsAtlasesOutputJson
 }
 
+export interface AtlasParserTransferrable {
+
+}
+
 type StoreType = Texture & { imageType: 'latest' | 'legacy', version: string }
 type DataUrl = string
 export class AtlasParser {
     atlasStore: VersionedStore<StoreType>
     atlasHasLegacyImage: boolean
+
+    static getTextureInfo(atlasStore: VersionedStore<StoreType>, itemsAtlases: ItemsAtlases, itemName: string, version = 'latest') {
+        const info = atlasStore.get(version, itemName)
+        if (!info) return
+        const defaultSuSv = (info.imageType === 'latest' ? itemsAtlases.latest : itemsAtlases.legacy!).suSv
+        return {
+            ...info,
+            su: info?.su ?? defaultSuSv,
+            sv: info?.sv ?? defaultSuSv,
+        }
+    }
 
     constructor(
         public atlasJson: any,
@@ -60,13 +75,10 @@ export class AtlasParser {
     }
 
     getTextureInfo(itemName: string, version = 'latest') {
-        const info = this.atlasStore.get(version, itemName);
+        const info = AtlasParser.getTextureInfo(this.atlasStore, this.atlas, itemName, version)
         if (!info) return
-        const defaultSuSv = (info.imageType === 'latest' ? this.atlas.latest : this.atlas.legacy!).suSv
         return {
             ...info,
-            su: info?.su ?? defaultSuSv,
-            sv: info?.sv ?? defaultSuSv,
             /** @deprecated */
             getLoadedImage: async () => {
                 return await getLoadedImage(info.imageType === 'latest' ? this.latestImage : this.legacyImage!)
@@ -80,14 +92,14 @@ export class AtlasParser {
     // getRenderedFullBlockSide(resolvedModel: ResolvedBlockModel, side: 'top' | 'bottom' | 'north' | 'south' | 'east' | 'west') {
     // }
 
-    async makeNewAtlas(version: string, getCustomImage?: (itemName: string) => DataUrl | HTMLImageElement | boolean | void, _unusedTileSize = this.atlas.latest.tileSize, getTextureSortRankOrTopTextures?: string[] | ((key: string) => number), addTextures = [] as string[], options: Pick<AtlasCreatorOptions, 'needHorizontalIndexes' | 'getCanvas'> = {}) {
+    async makeNewAtlas(version: string, getCustomImage?: (itemName: string) => DataUrl | HTMLCanvasElement | HTMLImageElement | boolean | void, _unusedTileSize = this.atlas.latest.tileSize, getTextureSortRankOrTopTextures?: string[] | ((key: string) => number), addTextures = [] as string[], options: Pick<AtlasCreatorOptions, 'needHorizontalIndexes' | 'getCanvas'> = {}) {
         const itemsAtlases = this.atlasJson as ItemsAtlases
         type CoordsAndImage = {
             u: number
             v: number
             su: number
             sv: number
-            img: HTMLImageElement
+            img: HTMLImageElement | HTMLCanvasElement
         }
         const newTextures: Record<string, CoordsAndImage> = {}
         const legacyImg = this.atlasHasLegacyImage ? await getLoadedImage(this.legacyImage!) : null
