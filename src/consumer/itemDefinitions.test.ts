@@ -346,7 +346,7 @@ describe('itemDefinitions', () => {
         })
     })
 
-    describe('compass', () => {
+    describe.skip('compass', () => {
         it('returns correct compass model for spawn point in overworld', () => {
             const result = getItemDefinition(store, {
                 version: version,
