@@ -279,3 +279,67 @@ Then if you only changing block entities, you can run `pnpm regen-blockentities`
 If you only change consumer code you can run `pnpm watch-dist` to watch for changes and rebuild.
 
 To use in `minecraft-web-client` or your own project just run `pnpm link mc-assets` once or use `file:../mc-assets` in your `package.json` file if you are using other package manager.
+
+## Block Animations
+
+The library provides support for Minecraft's animated textures through `.mcmeta` files. The build process automatically processes all animated textures and generates `dist/blockAnimations.json` with animation data.
+
+### Using Block Animations
+
+```ts
+import { getLoadedBlockAnimationsStore, getBlockAnimation, getAnimationFrame } from 'mc-assets'
+import blockAnimations from 'mc-assets/dist/blockAnimations.json'
+
+// Load the block animations store
+const animationsStore = getLoadedBlockAnimationsStore(blockAnimations)
+
+// Get animation data for a specific texture
+const fireAnimation = getBlockAnimation(animationsStore, 'fire_layer_0')
+if (fireAnimation) {
+  console.log('Fire animation:', {
+    name: fireAnimation.name,
+    frameTime: fireAnimation.frameTime, // ticks per frame
+    frameCount: fireAnimation.frameCount,
+    duration: fireAnimation.frameTime * fireAnimation.frameCount // total duration in ticks
+  })
+
+  // Get current frame at a specific game time
+  const frame = getAnimationFrame(fireAnimation, 50) // game time in ticks
+  console.log(`Current frame: ${frame.frameName} (index: ${frame.frameIndex})`)
+}
+
+// Get version-specific animations
+const legacyWaterFlow = getBlockAnimation(animationsStore, 'water_flow', '1.13')
+```
+
+### Animation Data Structure
+
+Each animation entry contains:
+
+- `name`: The texture name
+- `frameTime`: Number of ticks each frame is displayed
+- `frameCount`: Total number of frames in the animation
+- `frames`: Array of frame names with postfixes (`_0`, `_1`, etc.)
+- `interpolate`: Whether the animation uses interpolation (optional)
+
+### Supported Animations
+
+The system automatically detects and processes all animated textures including:
+
+- **Fire and lava**: `fire_layer_0`, `fire_layer_1`, `lava_flow`, `lava_still`
+- **Water**: `water_flow`, `water_still`
+- **Portals**: `portal`, `nether_portal`
+- **Command blocks**: Various command block textures with different states
+- **Plants**: `kelp`, `seagrass`, `crimson_stem`, `warped_stem`
+- **Sculk**: Various sculk-related textures
+- **And many more**: Including campfires, lanterns, magma, prismarine, etc.
+
+### Atlas Integration
+
+Animated textures are automatically processed during atlas creation:
+
+1. **Frame Extraction**: Each animated texture is split into individual frames
+2. **Atlas Placement**: Each frame is placed in the texture atlas with a unique name
+3. **Animation Data**: The `blockAnimations.json` file provides metadata for runtime animation
+
+This allows you to render animated blocks by cycling through the individual frames based on game time.

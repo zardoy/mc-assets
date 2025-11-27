@@ -1,6 +1,7 @@
 import fs from 'fs'
 import { makeTextureAtlas } from './atlasNode'
 import { join } from 'path/posix'
+import { processAnimatedTexture } from './consumer/atlasCreator'
 
 const rawData = JSON.parse(fs.readFileSync('./data/data-paths.json', 'utf8'))
 const blockstatesModels = JSON.parse(
@@ -70,16 +71,82 @@ for (const [name, { textures = {} }] of Object.entries(blockstatesModels.models.
 }
 
 const makeAtlas = (name, textures) => {
-    const { image, json } = makeTextureAtlas(Object.keys(textures), (name) => {
-        const texPath = textures[name]!
-        const contents = `data:image/png;base64,${fs.readFileSync(join('data', `${texPath}`), 'base64')}`
-        return {
-            contents,
-            // todo
-            useOriginalSize: name.includes('entity/'),
+    // Process animated textures first
+    const processedTextures: Record<string, string> = {}
+    const animatedTextures: Record<string, { frames: string[], frameImages: HTMLImageElement[] }> = {}
+
+    for (const [textureName, texturePath] of Object.entries(textures)) {
+        // Check if this texture has a .mcmeta file (indicating animation)
+        const mcmetaPath = texturePath.replace('.png', '.png.mcmeta')
+        if (fs.existsSync(join('data', mcmetaPath))) {
+            try {
+                // Load the image to process frames
+                const imagePath = join('data', texturePath)
+                const imageBuffer = fs.readFileSync(imagePath)
+                const { Image } = require('canvas')
+                const image = new Image()
+                image.src = imageBuffer
+
+                // Process the animated texture
+                const { frames, frameImages } = processAnimatedTexture(textureName, image, 16)
+                animatedTextures[textureName] = { frames, frameImages }
+
+                // Add each frame as a separate texture
+                frames.forEach((frameName, index) => {
+                    processedTextures[frameName] = texturePath // Keep original path for reference
+                })
+
+                console.log(`Processed animated texture: ${textureName} -> ${frames.length} frames`)
+            } catch (error) {
+                console.warn(`Error processing animated texture ${textureName}:`, error)
+                // Fall back to normal texture
+                processedTextures[textureName] = texturePath
+            }
+        } else {
+            // Normal texture, add as-is
+            processedTextures[textureName] = texturePath
+        }
+    }
+
+    const { image, json } = makeTextureAtlas(Object.keys(processedTextures), (name) => {
+        // Check if this is an animated frame
+        const originalTextureName = name.replace(/_\d+$/, '') // Remove frame suffix
+        const isAnimatedFrame = animatedTextures[originalTextureName] && name.includes('_')
+
+                if (isAnimatedFrame) {
+            // This is a frame from an animated texture
+            const frameIndex = parseInt(name.split('_').pop() || '0')
+            const animatedTexture = animatedTextures[originalTextureName]
+            if (!animatedTexture) {
+                throw new Error(`Missing animated texture data for ${originalTextureName}`)
+            }
+            const frameImage = animatedTexture.frameImages[frameIndex]
+            if (!frameImage) {
+                throw new Error(`Missing frame ${frameIndex} for animated texture ${originalTextureName}`)
+            }
+
+            // Convert frame image to data URL
+            const canvas = new (require('canvas').Canvas)(frameImage.width, frameImage.height)
+            const ctx = canvas.getContext('2d')
+            ctx.drawImage(frameImage, 0, 0)
+            const dataUrl = canvas.toDataURL()
+
+            return {
+                contents: dataUrl,
+                useOriginalSize: true,
+            }
+        } else {
+            // Normal texture processing
+            const texPath = processedTextures[name]!
+            const contents = `data:image/png;base64,${fs.readFileSync(join('data', `${texPath}`), 'base64')}`
+            return {
+                contents,
+                // todo
+                useOriginalSize: name.includes('entity/'),
+            }
         }
     })
-    fs.writeFileSync(`./dist/${name}.png`, image)
+    fs.writeFileSync(`./dist/${name}.png`, image as Uint8Array)
     return json
 }
 
