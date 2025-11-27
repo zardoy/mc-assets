@@ -26,7 +26,23 @@ blockstatesModels.blockstates.latest['errored'] = {
 const texturesAddFirst = {
     'unknown': '../custom/missing_texture.png',
     'errored': '../custom/errored_texture.png',
-    'end_portal_top': '../custom/textures/end_portal_top.png'
+    'end_portal_top': '../custom/textures/end_portal_top.png',
+    'banner/banner_black': '../custom/textures/banner/banner_black.png',
+    'banner/banner_blue': '../custom/textures/banner/banner_blue.png',
+    'banner/banner_brown': '../custom/textures/banner/banner_brown.png',
+    'banner/banner_cyan': '../custom/textures/banner/banner_cyan.png',
+    'banner/banner_gray': '../custom/textures/banner/banner_gray.png',
+    'banner/banner_green': '../custom/textures/banner/banner_green.png',
+    'banner/banner_light_blue': '../custom/textures/banner/banner_light_blue.png',
+    'banner/banner_light_gray': '../custom/textures/banner/banner_light_gray.png',
+    'banner/banner_lime': '../custom/textures/banner/banner_lime.png',
+    'banner/banner_magenta': '../custom/textures/banner/banner_magenta.png',
+    'banner/banner_orange': '../custom/textures/banner/banner_orange.png',
+    'banner/banner_pink': '../custom/textures/banner/banner_pink.png',
+    'banner/banner_purple': '../custom/textures/banner/banner_purple.png',
+    'banner/banner_red': '../custom/textures/banner/banner_red.png',
+    'banner/banner_white': '../custom/textures/banner/banner_white.png',
+    'banner/banner_yellow': '../custom/textures/banner/banner_yellow.png',
 }
 const texturesAddLast = {}
 blockstatesModels.models.latest['block/unknown'] = {
