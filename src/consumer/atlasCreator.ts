@@ -55,6 +55,50 @@ export type AtlasCreatorOptions = {
     getCanvas?: (imgSize: number) => HTMLCanvasElement
 }
 
+// New function to process animated textures
+export const processAnimatedTexture = (
+    textureName: string,
+    image: HTMLImageElement,
+    tileSize: number,
+    frameHeight: number = 16
+): { frames: string[], frameImages: HTMLImageElement[] } => {
+    const frameCount = Math.floor(image.height / frameHeight)
+    const frames: string[] = []
+    const frameImages: HTMLImageElement[] = []
+
+    for (let i = 0; i < frameCount; i++) {
+        const frameName = `${textureName}_${i}`
+        frames.push(frameName)
+
+                // Create a canvas for each frame
+        const canvas = typeof document !== 'undefined' && document.createElement
+            ? document.createElement('canvas')
+            : new (require('canvas').Canvas)(image.width, frameHeight, 'png' as any)
+
+        canvas.width = image.width
+        canvas.height = frameHeight
+
+        const ctx = canvas.getContext('2d')!
+        ctx.imageSmoothingEnabled = false
+
+        // Draw the specific frame from the animated texture
+        ctx.drawImage(
+            image,
+            0, i * frameHeight, // Source x, y
+            image.width, frameHeight, // Source width, height
+            0, 0, // Destination x, y
+            image.width, frameHeight // Destination width, height
+        )
+
+        // Convert canvas to image
+        const frameImage = new Image()
+        frameImage.src = canvas.toDataURL()
+        frameImages.push(frameImage)
+    }
+
+    return { frames, frameImages }
+}
+
 export const makeTextureAtlas = (
     {
         input,

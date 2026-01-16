@@ -17,5 +17,5 @@ const blocksAtlasParser = new AtlasParser(blocksAtlases, '')
 
 // console.log(blocksAtlasParser.getTextureInfo("entity/decorated_pot/decorated_pot_base"))
 const itemRenderer = new ItemsRenderer('1.21.4', blockstatesModels, itemsAtlasParser, blocksAtlasParser);
-const result = itemRenderer.getItemTexture('chest', undefined, undefined, true);
+const result = itemRenderer.getItemTexture('block/errored', undefined, undefined);
 console.log(result)

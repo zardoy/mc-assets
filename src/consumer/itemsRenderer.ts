@@ -5,15 +5,37 @@ import { BlockModel, ItemModel } from './types';
 
 type TextureSlice = [absoluteX: number, absoluteY: number, width: number, height: number]
 
+interface ItemsRendererTransferrable {
+    version: string
+    blockstatesModels: any
+    itemsAtlasParser: any
+    blocksAtlasParser?: any
+}
+
 export class ItemsRenderer {
+    static name = 'mc-assets:ItemsRenderer'
+    
     blockStatesStore: BlockStatesStore
     modelsStore: BlockModelsStore
     assetsParser: AssetsParser
 
-    constructor(public version: string, blockstatesModels: any, public itemsAtlasParser: AtlasParser, public blocksAtlasParser?: AtlasParser) {
+    static restoreTransferred(data: ItemsRendererTransferrable) {
+        return new ItemsRenderer(data.version, data.blockstatesModels, data.itemsAtlasParser, data.blocksAtlasParser)
+    }
+    
+    constructor(public version: string, private blockstatesModels: any, public itemsAtlasParser: AtlasParser, public blocksAtlasParser?: AtlasParser) {
         this.blockStatesStore = getLoadedBlockstatesStore(blockstatesModels)
         this.modelsStore = getLoadedModelsStore(blockstatesModels)
         this.assetsParser = new AssetsParser(version, this.blockStatesStore, this.modelsStore)
+    }
+
+    prepareForTransfer(): ItemsRendererTransferrable {
+        return {
+            version: this.version,
+            blockstatesModels: this.blockstatesModels,
+            itemsAtlasParser: this.itemsAtlasParser.prepareTransferable(),
+            blocksAtlasParser: this.blocksAtlasParser?.prepareTransferable()
+        }
     }
 
     resolveTexture(texture: string) {
@@ -22,7 +44,7 @@ export class ItemsRenderer {
         }
         const type = texture.includes('items/') ? 'items' : (texture.includes('block/') || texture.includes('blocks/')) ? 'blocks' : 'items'
         const atlasParser = type === 'blocks' ? this.blocksAtlasParser! : this.itemsAtlasParser
-        const textureInfo = atlasParser.getTextureInfo(texture.replace('block/', '').replace('blocks/', '').replace('item/', '').replace('items/', ''), this.version)!
+        const textureInfo = AtlasParser.getTextureInfo(atlasParser.atlasStore, atlasParser.atlas, texture.replace('block/', '').replace('blocks/', '').replace('item/', '').replace('items/', ''), this.version)!
         if (!textureInfo) return
         const atlas = atlasParser.atlas[textureInfo.imageType]!
         return {

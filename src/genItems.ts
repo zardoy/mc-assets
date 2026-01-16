@@ -1,16 +1,15 @@
 import fs from 'fs'
 import { join } from 'path/posix'
+import { makeTextureAtlas } from './atlasNode'
+import { processAnimatedTexture } from './consumer/atlasCreator'
+import { JsonAtlas } from './consumer/atlasCreator'
 import { filesize } from 'filesize'
-
-// todo remove
-import { makeTextureAtlas, writeCanvasStream } from './atlasNode'
-import looksSame from 'looks-same' // ensure after canvas import
+import looksSame from 'looks-same'
 import { versionToNumber } from './consumer/utils'
 import { AssetsParser } from './consumer/assetsParser'
 import { getLoadedBlockstatesStore, getLoadedModelsStore } from './consumer'
 import { ItemModel } from './consumer/types'
 import { Image, createCanvas } from 'canvas'
-import { JsonAtlas } from './consumer/atlasCreator'
 
 const legacyInvsprite = JSON.parse(fs.readFileSync('./custom/invsprite.json', 'utf8'))
 const invspriteImage = new Image()
@@ -18,9 +17,17 @@ invspriteImage.src = './custom/invsprite.png'
 
 const rawData = JSON.parse(fs.readFileSync('./data/data-paths.json', 'utf8'))
 const latestTextures = Object.fromEntries(Object.entries(rawData.latest['textures/']).map(([key, path]) => [key.replace('.png', ''), path.replace('.png', '')]))
-const blockstatesModels = JSON.parse(fs.readFileSync('./temp/blockStatesModels.json', 'utf8'))
+const blockstatesModels = JSON.parse(
+    fs.existsSync('./dist/blockStatesModels.json')
+        ? fs.readFileSync('./dist/blockStatesModels.json', 'utf8')
+        : fs.readFileSync('./temp/blockStatesModels.json', 'utf8')
+)
 
 const assetsParser = new AssetsParser('latest', getLoadedBlockstatesStore(blockstatesModels), getLoadedModelsStore(blockstatesModels))
+
+const allModels = blockstatesModels.models
+const latestModels = allModels.latest
+const allItemsModelsWithoutParentReference = {} as Record<string, ItemModel>
 
 function isCube(blockName) {
   return assetsParser.getElements({
@@ -30,24 +37,23 @@ function isCube(blockName) {
 }
 
 export type ItemsAtlasesOutputJson = {
-  latest: JsonAtlas
-  legacy: JsonAtlas
-  legacyMap: [string, string[]][]
+    latest: JsonAtlas
+    legacy: JsonAtlas
+    legacyMap: [string, string[]][]
 }
 
 const usedInvsprite = [] as string[]
 
 export const generateItemsAtlases = async () => {
   const parentReferences = {} as Record<string, string[]>
-  const allModels = blockstatesModels.models
-  const latestModels = allModels.latest
+
   for (const [modelName, model] of Object.entries(latestModels)) {
     if (!modelName.startsWith('item/')) continue
     if (!model.parent) continue
     parentReferences[model.parent] ??= []
     parentReferences[model.parent]!.push(modelName)
   }
-  const allItemsModelsWithoutParentReference = {} as Record<string, ItemModel>
+
   for (const [modelName, model] of Object.entries(latestModels)) {
     if (!modelName.startsWith('item/')) continue
     if (parentReferences[modelName]) continue
@@ -121,7 +127,6 @@ export const generateItemsAtlases = async () => {
         }
         possiblyReplaceInvsprite(allModels[model.parent], model.parent, allModels)
       }
-
     }
   }
 
@@ -139,28 +144,93 @@ export const generateItemsAtlases = async () => {
   }
   addTextures['air'] = `data:image/png;base64,${fs.readFileSync(join('./custom/air.png'), 'base64')}`
 
-
   for (const [name, model] of Object.entries(latestModels)) {
     if (!name.startsWith('item/')) continue
     possiblyReplaceInvsprite(model, name, latestModels)
   }
 
   const createItemsAtlas = (key: string, textures: Record<string, string>) => {
-    const { json, image } = makeTextureAtlas(Object.keys(textures), (name) => {
-      let texPath = textures[name]!
-      // if starts with data url
-      if (texPath.startsWith('data:image/png;base64,')) {
-        return {
-          contents: texPath,
+    // Process animated textures first
+    const processedTextures: Record<string, string> = {}
+    const animatedTextures: Record<string, { frames: string[], frameImages: HTMLImageElement[] }> = {}
+
+    for (const [textureName, texturePath] of Object.entries(textures)) {
+      // Check if this texture has a .mcmeta file (indicating animation)
+      const mcmetaPath = texturePath.replace('.png', '.png.mcmeta')
+      if (fs.existsSync(join('data', mcmetaPath))) {
+        try {
+          // Load the image to process frames
+          const imagePath = join('data', texturePath)
+          const imageBuffer = fs.readFileSync(imagePath)
+          const { Image } = require('canvas')
+          const image = new Image()
+          image.src = imageBuffer
+
+          // Process the animated texture
+          const { frames, frameImages } = processAnimatedTexture(textureName, image, 16)
+          animatedTextures[textureName] = { frames, frameImages }
+
+          // Add each frame as a separate texture
+          frames.forEach((frameName, index) => {
+            processedTextures[frameName] = texturePath // Keep original path for reference
+          })
+
+          console.log(`Processed animated item texture: ${textureName} -> ${frames.length} frames`)
+        } catch (error) {
+          console.warn(`Error processing animated item texture ${textureName}:`, error)
+          // Fall back to normal texture
+          processedTextures[textureName] = texturePath
         }
+      } else {
+        // Normal texture, add as-is
+        processedTextures[textureName] = texturePath
       }
-      texPath = texPath.replace('block/blocks/', 'blocks/')
-      // if (!texPath.startsWith('blocks/') && !texPath.startsWith('items/')) {
-      //   texPath = `blocks/${texPath}`
-      // }
-      const contents = `data:image/png;base64,${fs.readFileSync(join('data', `${texPath}`), 'base64')}`
-      return {
-        contents,
+    }
+
+    const { json, image } = makeTextureAtlas(Object.keys(processedTextures), (name) => {
+      // Check if this is an animated frame
+      const originalTextureName = name.replace(/_\d+$/, '') // Remove frame suffix
+      const isAnimatedFrame = animatedTextures[originalTextureName] && name.includes('_')
+
+      if (isAnimatedFrame) {
+        // This is a frame from an animated texture
+        const frameIndex = parseInt(name.split('_').pop() || '0')
+        const animatedTexture = animatedTextures[originalTextureName]
+        if (!animatedTexture) {
+          throw new Error(`Missing animated texture data for ${originalTextureName}`)
+        }
+        const frameImage = animatedTexture.frameImages[frameIndex]
+        if (!frameImage) {
+          throw new Error(`Missing frame ${frameIndex} for animated texture ${originalTextureName}`)
+        }
+
+        // Convert frame image to data URL
+        const canvas = new (require('canvas').Canvas)(frameImage.width, frameImage.height)
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(frameImage, 0, 0)
+        const dataUrl = canvas.toDataURL()
+
+        return {
+          contents: dataUrl,
+          useOriginalSize: true,
+        }
+      } else {
+        // Normal texture processing
+        let texPath = processedTextures[name]!
+        // if starts with data url
+        if (texPath.startsWith('data:image/png;base64,')) {
+          return {
+            contents: texPath,
+          }
+        }
+        texPath = texPath.replace('block/blocks/', 'blocks/')
+        // if (!texPath.startsWith('blocks/') && !texPath.startsWith('items/')) {
+        //   texPath = `blocks/${texPath}`
+        // }
+        const contents = `data:image/png;base64,${fs.readFileSync(join('data', `${texPath}`), 'base64')}`
+        return {
+          contents,
+        }
       }
     })
     fs.writeFileSync(`./dist/${key}.png`, image)
