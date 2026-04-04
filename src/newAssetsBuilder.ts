@@ -12,10 +12,20 @@ const normalizeModelString = (str: string) => {
     }
     return str
 }
+
+/** Newer jars use object entries e.g. `{ sprite: "minecraft:block/glass", force_translucent: true }`. */
+const normalizeTextureEntry = (value: unknown): string => {
+    if (typeof value === 'string') return normalizeModelString(value)
+    if (value && typeof value === 'object' && typeof (value as { sprite?: unknown }).sprite === 'string') {
+        return normalizeModelString((value as { sprite: string }).sprite)
+    }
+    throw new Error(`Unsupported texture entry: ${JSON.stringify(value)}`)
+}
+
 export const normalizeModel = (model: BlockModel | ItemModel) => {
     model.parent = model.parent?.replace(/^(minecraft:)/, '')
     for (const [key, value] of Object.entries(model.textures ?? {})) {
-        model.textures![key] = normalizeModelString(value)
+        model.textures![key] = normalizeTextureEntry(value)
     }
     if ('overrides' in model) {
         for (const override of model.overrides!) {
