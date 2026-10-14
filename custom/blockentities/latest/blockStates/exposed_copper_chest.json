@@ -3,47 +3,47 @@
         "facing=north,type=single": {
             "model": "chest_copper_exposed"
         },
+        "facing=north,type=left": {
+            "model": "chest_left_copper_exposed"
+        },
+        "facing=north,type=right": {
+            "model": "chest_right_copper_exposed"
+        },
         "facing=east,type=single": {
             "model": "chest_copper_exposed",
+            "y": 90
+        },
+        "facing=east,type=left": {
+            "model": "chest_left_copper_exposed",
+            "y": 90
+        },
+        "facing=east,type=right": {
+            "model": "chest_right_copper_exposed",
             "y": 90
         },
         "facing=south,type=single": {
             "model": "chest_copper_exposed",
             "y": 180
         },
-        "facing=west,type=single": {
-            "model": "chest_copper_exposed",
-            "y": 270
-        },
-        "facing=north,type=left": {
-            "model": "chest_left_copper_exposed",
-            "y": 90
-        },
-        "facing=east,type=left": {
-            "model": "chest_left_copper_exposed",
-            "y": 180
-        },
         "facing=south,type=left": {
             "model": "chest_left_copper_exposed",
-            "y": 270
-        },
-        "facing=west,type=left": {
-            "model": "chest_left_copper_exposed"
-        },
-        "facing=north,type=right": {
-            "model": "chest_right_copper_exposed",
-            "y": 90
-        },
-        "facing=east,type=right": {
-            "model": "chest_right_copper_exposed",
             "y": 180
         },
         "facing=south,type=right": {
             "model": "chest_right_copper_exposed",
+            "y": 180
+        },
+        "facing=west,type=single": {
+            "model": "chest_copper_exposed",
+            "y": 270
+        },
+        "facing=west,type=left": {
+            "model": "chest_left_copper_exposed",
             "y": 270
         },
         "facing=west,type=right": {
-            "model": "chest_right_copper_exposed"
+            "model": "chest_right_copper_exposed",
+            "y": 270
         }
     }
 }
