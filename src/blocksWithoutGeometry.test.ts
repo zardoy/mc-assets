@@ -6,10 +6,7 @@ import { getBlocksWithoutGeometry, INVISIBLE_BLOCKS } from './blocksWithoutGeome
 const blockstatesModels = JSON.parse(fs.readFileSync('./dist/blockStatesModels.json', 'utf8'))
 
 // Block entities still without a custom model. A new block entity without one fails this test.
-const KNOWN_MISSING = [
-    'conduit',
-    ...['', 'exposed_', 'weathered_', 'oxidized_'].flatMap(stage => [`${stage}copper_golem_statue`, `waxed_${stage}copper_golem_statue`]),
-]
+const KNOWN_MISSING: string[] = []
 
 describe('blocks without geometry', () => {
     test('are only the invisible blocks and the known missing block entities', () => {
