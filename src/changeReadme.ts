@@ -1,4 +1,5 @@
 import fs from 'fs'
+import { getBlocksWithoutGeometry, INVISIBLE_BLOCKS } from './blocksWithoutGeometry'
 
 if (!process.env.CI) process.exit(0)
 
@@ -12,7 +13,13 @@ for (const [name, value] of Object.entries(dataPaths.latest['blockstates/'])) {
         renderedBlockEntities.push(name.split('/').pop()!.replace('.json', ''))
     }
 }
-const notRenderedBlockEntities = Object.keys(missingBlockEntities).filter(name => !renderedBlockEntities.includes(name))
+// block entities that render nothing (no custom model yet) are found from the generated models
+const blocksWithoutGeometry = getBlocksWithoutGeometry(JSON.parse(fs.readFileSync('./dist/blockStatesModels.json', 'utf8')))
+    .filter(name => !INVISIBLE_BLOCKS.includes(name))
+const notRenderedBlockEntities = [...new Set([
+    ...Object.keys(missingBlockEntities).filter(name => !renderedBlockEntities.includes(name)),
+    ...blocksWithoutGeometry,
+])]
 const includedVersions = Object.keys(dataPaths).filter(v => v !== 'latest').join(', ')
 readme = readme.replace(/<!-- GENERATED -->/, `
 All blockstates + models + all atlas textures for all versions bundled with rsbuild (uncompressed): ${bundleSize}.
