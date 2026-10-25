@@ -1,0 +1,7 @@
+{
+    "parent": "block/copper_golem_statue_star",
+    "textures": {
+        "golem": "entity/copper_golem/copper_golem_exposed",
+        "particle": "block/exposed_copper"
+    }
+}

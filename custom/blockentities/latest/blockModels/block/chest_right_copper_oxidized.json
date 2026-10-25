@@ -1,0 +1,7 @@
+{
+    "parent": "block/chest_right_copper",
+    "textures": {
+        "chest": "entity/chest/copper_oxidized_right",
+        "particle": "block/oxidized_copper"
+    }
+}

@@ -120,6 +120,12 @@ describe('ItemsRenderer', () => {
             `)
         })
 
+        it('copper chests', () => {
+            expect(getItemTexture('copper_chest', true)?.['textures']?.chest).toBe('block/entity/chest/copper')
+            // waxing does not change the texture
+            expect(getItemTexture('waxed_oxidized_copper_chest', true)?.['textures']?.chest).toBe('block/entity/chest/copper_oxidized')
+        })
+
         it('not implemented logic', () => {
             expect(getItemTexture('cut_copper_slab')).toMatchInlineSnapshot(`undefined`)
             expect(getItemTexture('bla_bla')).toMatchInlineSnapshot(`undefined`)

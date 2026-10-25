@@ -1,0 +1,64 @@
+{
+    "variants": {
+        "copper_golem_pose=standing,facing=north": {
+            "model": "copper_golem_statue_standing_exposed"
+        },
+        "copper_golem_pose=standing,facing=east": {
+            "model": "copper_golem_statue_standing_exposed",
+            "y": 90
+        },
+        "copper_golem_pose=standing,facing=south": {
+            "model": "copper_golem_statue_standing_exposed",
+            "y": 180
+        },
+        "copper_golem_pose=standing,facing=west": {
+            "model": "copper_golem_statue_standing_exposed",
+            "y": 270
+        },
+        "copper_golem_pose=sitting,facing=north": {
+            "model": "copper_golem_statue_sitting_exposed"
+        },
+        "copper_golem_pose=sitting,facing=east": {
+            "model": "copper_golem_statue_sitting_exposed",
+            "y": 90
+        },
+        "copper_golem_pose=sitting,facing=south": {
+            "model": "copper_golem_statue_sitting_exposed",
+            "y": 180
+        },
+        "copper_golem_pose=sitting,facing=west": {
+            "model": "copper_golem_statue_sitting_exposed",
+            "y": 270
+        },
+        "copper_golem_pose=running,facing=north": {
+            "model": "copper_golem_statue_running_exposed"
+        },
+        "copper_golem_pose=running,facing=east": {
+            "model": "copper_golem_statue_running_exposed",
+            "y": 90
+        },
+        "copper_golem_pose=running,facing=south": {
+            "model": "copper_golem_statue_running_exposed",
+            "y": 180
+        },
+        "copper_golem_pose=running,facing=west": {
+            "model": "copper_golem_statue_running_exposed",
+            "y": 270
+        },
+        "copper_golem_pose=star,facing=north": {
+            "model": "copper_golem_statue_star_exposed"
+        },
+        "copper_golem_pose=star,facing=east": {
+            "model": "copper_golem_statue_star_exposed",
+            "y": 90
+        },
+        "copper_golem_pose=star,facing=south": {
+            "model": "copper_golem_statue_star_exposed",
+            "y": 180
+        },
+        "copper_golem_pose=star,facing=west": {
+            "model": "copper_golem_statue_star_exposed",
+            "y": 270
+        }
+    }
+}

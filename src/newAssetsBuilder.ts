@@ -177,6 +177,7 @@ export const buildBlocksStatesModels = () => {
     validateModels(assetsOutput.models!.latest!, {}, assetsOutput.hardcodedModels as any)
 
     fs.mkdirSync('./dist', { recursive: true })
+    fs.mkdirSync('./temp', { recursive: true })
     fs.writeFileSync('./temp/blockStatesModels.json', JSON.stringify(assetsOutput, null, 4))
 }
 

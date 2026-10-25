@@ -49,10 +49,16 @@ export type BlockModel = {
         to: BlockElementPos
         rotation?: {
             origin: [number, number, number]
+            rescale?: boolean
+        } & ({
             axis: string
             angle: number
-            rescale?: boolean
-        }
+        } | {
+            // 26.x: degrees about each axis, applied as rotationZYX(z, y, x)
+            x?: number
+            y?: number
+            z?: number
+        })
         faces: {
             [name: string]: {
                 texture: string
