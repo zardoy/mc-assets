@@ -8,12 +8,14 @@ globalThis.Image = Image
 export const makeTextureAtlas = (
   input: string[],
   getInputData: AtlasCreatorOptions['getLoadedImage'],
+  options: Pick<AtlasCreatorOptions, 'tileSize'> = {},
 ): {
   image: Buffer,
   json: JsonAtlas
 } => {
   let canvas!: Canvas
   const {json} = makeAtlas({
+    ...options,
     getCanvas(imgSize) {
         canvas = new Canvas(imgSize, imgSize, 'png' as any)
         return canvas as any

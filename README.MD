@@ -137,6 +137,25 @@ const image = canvas.toDataURL() // get image data url if you need it
 const diamondOreTexture = newAtlasParser.getTextureInfo('diamond_ore') // get old diamond ore texture (essentially the same as above)
 ```
 
+### Animated Block Textures
+
+Blocks atlas always contains the **first frame** of animated textures (water, lava, fire, portals, command blocks, lanterns, sculk, etc.), so static rendering works without anything extra. To play animations, the rest of the frames are shipped separately in `blocksAnimationsAtlas.png` (sprite sheets as is, packed) along with `blocksAnimations.json` (timing from `.mcmeta` files):
+
+```ts
+import { getTextureAnimation, getAnimationStateAt, getAnimationFrameRect } from 'mc-assets'
+import blocksAnimations from 'mc-assets/dist/blocksAnimations.json'
+
+const animation = getTextureAnimation(blocksAnimations, 'water_still', '1.20.1') // undefined if the texture is not animated in that version
+if (animation) {
+    // game time in ticks (can be fractional)
+    const { frameIndex, nextFrameIndex, progress } = getAnimationStateAt(animation, 100.5) // progress is for `animation.interpolate`
+    const { x, y, width, height } = getAnimationFrameRect(animation, frameIndex)
+    // the frame is at (animation.x + x, animation.y + y) in blocksAnimationsAtlas.png
+}
+```
+
+To replace the texture, copy this frame over the texture position in the blocks atlas (get it from `atlasParser.getTextureInfo(name, version)`), the same way Minecraft does. Note that the atlas slot can have a different size than the frame (`water_flow` frames are 32x32, while its atlas slot is 16x16), so scale it. `parseAnimationMcmeta` is exported if you need to do the same for animated textures from resource packs.
+
 ### Getting Other Textures
 
 Textures without atlases are stored in `dist/other-textures` folder. You can use them like this:

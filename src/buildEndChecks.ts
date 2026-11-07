@@ -11,3 +11,7 @@ if (!fs.existsSync('./dist/blockStatesModels.json')) {
 if (!fs.existsSync('./dist/index.js')) {
     throw new Error('index.js not found, run build script first')
 }
+
+if (!fs.existsSync('./dist/blocksAnimations.json')) {
+    throw new Error('blocksAnimations.json not found, run build script first')
+}
